@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Database/Database.csproj" />
+  <Project Path="VtApp/VtApp.csproj" />
+</Solution>
