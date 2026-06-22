@@ -18,78 +18,50 @@
         TextElement.FontSize="14">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="240" />
+            <ColumnDefinition Width="56" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
         <Border Grid.Column="0"
                 Background="{DynamicResource MaterialDesign.Brush.Primary}"
                 materialDesign:ElevationAssist.Elevation="Dp2">
-            <DockPanel LastChildFill="True">
-                <StackPanel DockPanel.Dock="Top"
-                            Margin="24,32,24,32">
-                    <materialDesign:PackIcon Kind="EmailMultiple"
-                                             Width="36"
-                                             Height="36"
-                                             Foreground="{DynamicResource MaterialDesign.Brush.Primary.Foreground}"
-                                             HorizontalAlignment="Left" />
-                    <TextBlock Text="VT2"
-                               Margin="0,12,0,0"
-                               Style="{StaticResource MaterialDesignHeadline5TextBlock}"
-                               Foreground="{DynamicResource MaterialDesign.Brush.Primary.Foreground}" />
-                    <TextBlock Text="Task Manager"
-                               Opacity="0.8"
-                               Style="{StaticResource MaterialDesignBody2TextBlock}"
-                               Foreground="{DynamicResource MaterialDesign.Brush.Primary.Foreground}" />
-                </StackPanel>
+            <ListBox Background="Transparent"
+                     BorderThickness="0"
+                     Margin="0,8,0,0"
+                     SelectedValue="{Binding SelectedPage, Mode=TwoWay}"
+                     SelectedValuePath="Tag">
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem"
+                           BasedOn="{StaticResource MaterialDesignNavigationPrimaryListBoxItem}">
+                        <Setter Property="Padding" Value="0" />
+                        <Setter Property="Margin" Value="6,4" />
+                        <Setter Property="HorizontalContentAlignment" Value="Center" />
+                        <Setter Property="VerticalContentAlignment" Value="Center" />
+                        <Setter Property="Width" Value="44" />
+                        <Setter Property="Height" Value="44" />
+                    </Style>
+                </ListBox.ItemContainerStyle>
 
-                <ListBox DockPanel.Dock="Top"
-                         Background="Transparent"
-                         BorderThickness="0"
-                         SelectedValue="{Binding SelectedPage, Mode=TwoWay}"
-                         SelectedValuePath="Tag">
-                    <ListBox.ItemContainerStyle>
-                        <Style TargetType="ListBoxItem"
-                               BasedOn="{StaticResource MaterialDesignNavigationPrimaryListBoxItem}">
-                            <Setter Property="Padding" Value="16,12" />
-                            <Setter Property="Margin" Value="8,2" />
-                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                        </Style>
-                    </ListBox.ItemContainerStyle>
+                <ListBoxItem Tag="Tasks"
+                             ToolTip="Задачи"
+                             materialDesign:ListBoxItemAssist.ShowSelection="True">
+                    <materialDesign:PackIcon Kind="FormatListChecks"
+                                             Width="24"
+                                             Height="24" />
+                </ListBoxItem>
 
-                    <ListBoxItem Tag="Tasks"
-                                 materialDesign:ListBoxItemAssist.ShowSelection="True">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="FormatListChecks"
-                                                     Width="22"
-                                                     Height="22"
-                                                     VerticalAlignment="Center" />
-                            <TextBlock Text="Задачи"
-                                       Margin="16,0,0,0"
-                                       VerticalAlignment="Center"
-                                       Style="{StaticResource MaterialDesignBody1TextBlock}" />
-                        </StackPanel>
-                    </ListBoxItem>
-
-                    <ListBoxItem Tag="Settings"
-                                 materialDesign:ListBoxItemAssist.ShowSelection="True">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="Cog"
-                                                     Width="22"
-                                                     Height="22"
-                                                     VerticalAlignment="Center" />
-                            <TextBlock Text="Настройки"
-                                       Margin="16,0,0,0"
-                                       VerticalAlignment="Center"
-                                       Style="{StaticResource MaterialDesignBody1TextBlock}" />
-                        </StackPanel>
-                    </ListBoxItem>
-                </ListBox>
-            </DockPanel>
+                <ListBoxItem Tag="Settings"
+                             ToolTip="Настройки"
+                             materialDesign:ListBoxItemAssist.ShowSelection="True">
+                    <materialDesign:PackIcon Kind="Cog"
+                                             Width="24"
+                                             Height="24" />
+                </ListBoxItem>
+            </ListBox>
         </Border>
 
         <materialDesign:Card Grid.Column="1"
-                             Margin="16"
+                             Margin="0"
                              Padding="24"
                              UniformCornerRadius="8">
             <ContentControl Content="{Binding CurrentView}" />

@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using VtApp.Models;
 
 namespace VtApp.ViewModels;
@@ -14,6 +15,11 @@ public partial class TasksViewModel : ObservableObject
     public TasksViewModel()
     {
         SeedDemoData();
+    }
+
+    [RelayCommand]
+    private void AddTask()
+    {
     }
 
     private void SeedDemoData()

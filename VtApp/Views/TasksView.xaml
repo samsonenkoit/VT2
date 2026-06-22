@@ -111,6 +111,7 @@
     </UserControl.Resources>
 
     <Grid Background="{DynamicResource MaterialDesign.Brush.Background}">
+        <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="8" />
@@ -148,5 +149,18 @@
             <ItemsControl ItemsSource="{Binding NotUrgentTasks}"
                           ItemTemplate="{StaticResource TaskCardTemplate}" />
         </ScrollViewer>
+        </Grid>
+
+        <Button Style="{StaticResource MaterialDesignFloatingActionButton}"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Margin="0,0,8,8"
+                Command="{Binding AddTaskCommand}"
+                ToolTip="Добавить задачу"
+                materialDesign:ElevationAssist.Elevation="Dp6">
+            <materialDesign:PackIcon Kind="Plus"
+                                     Width="24"
+                                     Height="24" />
+        </Button>
     </Grid>
 </UserControl>
