@@ -6,12 +6,12 @@ namespace Vt.Tests.ViewModels;
 public class MainWindowViewModelTests
 {
     [Fact]
-    public void Constructor_SetsHomeAsDefaultPage()
+    public void Constructor_SetsTasksAsDefaultPage()
     {
         var viewModel = new MainWindowViewModel();
 
-        Assert.Equal("Home", viewModel.SelectedPage);
-        Assert.IsType<HomeViewModel>(viewModel.CurrentView);
+        Assert.Equal("Tasks", viewModel.SelectedPage);
+        Assert.IsType<TasksViewModel>(viewModel.CurrentView);
     }
 
     [Fact]
@@ -25,23 +25,23 @@ public class MainWindowViewModelTests
     }
 
     [Fact]
-    public void SelectedPage_WhenChangedToUnknownValue_SetsCurrentViewToHomeViewModel()
+    public void SelectedPage_WhenChangedToUnknownValue_SetsCurrentViewToTasksViewModel()
     {
         var viewModel = new MainWindowViewModel();
         viewModel.SelectedPage = "Unknown";
 
         Assert.Equal("Unknown", viewModel.SelectedPage);
-        Assert.IsType<HomeViewModel>(viewModel.CurrentView);
+        Assert.IsType<TasksViewModel>(viewModel.CurrentView);
     }
 
     [Fact]
-    public void SelectedPage_WhenChangedBackToHome_SetsCurrentViewToHomeViewModel()
+    public void SelectedPage_WhenChangedBackToTasks_SetsCurrentViewToTasksViewModel()
     {
         var viewModel = new MainWindowViewModel();
         viewModel.SelectedPage = "Settings";
-        viewModel.SelectedPage = "Home";
+        viewModel.SelectedPage = "Tasks";
 
-        Assert.Equal("Home", viewModel.SelectedPage);
-        Assert.IsType<HomeViewModel>(viewModel.CurrentView);
+        Assert.Equal("Tasks", viewModel.SelectedPage);
+        Assert.IsType<TasksViewModel>(viewModel.CurrentView);
     }
 }

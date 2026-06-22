@@ -4,27 +4,27 @@ namespace VtApp.ViewModels;
 
 public partial class MainWindowViewModel : ObservableObject
 {
-    private readonly HomeViewModel _homeViewModel = new();
+    private readonly TasksViewModel _tasksViewModel = new();
     private readonly SettingsViewModel _settingsViewModel = new();
 
     [ObservableProperty]
     private object? _currentView;
 
     [ObservableProperty]
-    private string _selectedPage = "Home";
+    private string _selectedPage = "Tasks";
 
     public MainWindowViewModel()
     {
-        CurrentView = _homeViewModel;
+        CurrentView = _tasksViewModel;
     }
 
     partial void OnSelectedPageChanged(string value)
     {
         CurrentView = value switch
         {
-            "Home" => _homeViewModel,
+            "Tasks" => _tasksViewModel,
             "Settings" => _settingsViewModel,
-            _ => _homeViewModel
+            _ => _tasksViewModel
         };
     }
 }

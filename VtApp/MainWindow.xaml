@@ -57,14 +57,14 @@
                         </Style>
                     </ListBox.ItemContainerStyle>
 
-                    <ListBoxItem Tag="Home"
+                    <ListBoxItem Tag="Tasks"
                                  materialDesign:ListBoxItemAssist.ShowSelection="True">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="Home"
+                            <materialDesign:PackIcon Kind="FormatListChecks"
                                                      Width="22"
                                                      Height="22"
                                                      VerticalAlignment="Center" />
-                            <TextBlock Text="Главная"
+                            <TextBlock Text="Задачи"
                                        Margin="16,0,0,0"
                                        VerticalAlignment="Center"
                                        Style="{StaticResource MaterialDesignBody1TextBlock}" />
