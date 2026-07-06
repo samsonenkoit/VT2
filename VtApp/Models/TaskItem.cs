@@ -1,3 +1,5 @@
+using Database.Models;
+
 namespace VtApp.Models;
 
 public class TaskItem
