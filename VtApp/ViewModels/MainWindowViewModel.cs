@@ -4,8 +4,8 @@ namespace VtApp.ViewModels;
 
 public partial class MainWindowViewModel : ObservableObject
 {
-    private readonly TasksViewModel _tasksViewModel = new();
-    private readonly SettingsViewModel _settingsViewModel = new();
+    private readonly TasksViewModel _tasksViewModel;
+    private readonly SettingsViewModel _settingsViewModel;
 
     [ObservableProperty]
     private object? _currentView;
@@ -13,8 +13,10 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     private string _selectedPage = "Tasks";
 
-    public MainWindowViewModel()
+    public MainWindowViewModel(TasksViewModel tasksViewModel, SettingsViewModel settingsViewModel)
     {
+        _tasksViewModel = tasksViewModel;
+        _settingsViewModel = settingsViewModel;
         CurrentView = _tasksViewModel;
     }
 

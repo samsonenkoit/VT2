@@ -1,3 +1,5 @@
+using Database.Models;
+using Database.Repositories;
 using VtApp.ViewModels;
 using Xunit;
 
@@ -8,7 +10,7 @@ public class MainWindowViewModelTests
     [Fact]
     public void Constructor_SetsTasksAsDefaultPage()
     {
-        var viewModel = new MainWindowViewModel();
+        var viewModel = CreateViewModel();
 
         Assert.Equal("Tasks", viewModel.SelectedPage);
         Assert.IsType<TasksViewModel>(viewModel.CurrentView);
@@ -17,7 +19,7 @@ public class MainWindowViewModelTests
     [Fact]
     public void SelectedPage_WhenChangedToSettings_SetsCurrentViewToSettingsViewModel()
     {
-        var viewModel = new MainWindowViewModel();
+        var viewModel = CreateViewModel();
         viewModel.SelectedPage = "Settings";
 
         Assert.Equal("Settings", viewModel.SelectedPage);
@@ -27,7 +29,7 @@ public class MainWindowViewModelTests
     [Fact]
     public void SelectedPage_WhenChangedToUnknownValue_SetsCurrentViewToTasksViewModel()
     {
-        var viewModel = new MainWindowViewModel();
+        var viewModel = CreateViewModel();
         viewModel.SelectedPage = "Unknown";
 
         Assert.Equal("Unknown", viewModel.SelectedPage);
@@ -37,11 +39,27 @@ public class MainWindowViewModelTests
     [Fact]
     public void SelectedPage_WhenChangedBackToTasks_SetsCurrentViewToTasksViewModel()
     {
-        var viewModel = new MainWindowViewModel();
+        var viewModel = CreateViewModel();
         viewModel.SelectedPage = "Settings";
         viewModel.SelectedPage = "Tasks";
 
         Assert.Equal("Tasks", viewModel.SelectedPage);
         Assert.IsType<TasksViewModel>(viewModel.CurrentView);
+    }
+
+    private static MainWindowViewModel CreateViewModel()
+    {
+        var tasksViewModel = new TasksViewModel(new EmptyTaskRepository());
+        return new MainWindowViewModel(tasksViewModel, new SettingsViewModel());
+    }
+
+    private sealed class EmptyTaskRepository : ITaskRepository
+    {
+        public Task<IReadOnlyList<TaskDb>> GetAllActiveAsync(
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<TaskDb>>([]);
+
+        public Task UpdateAsync(TaskDb task, CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
     }
 }

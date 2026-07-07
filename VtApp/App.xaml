@@ -3,8 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:viewModels="clr-namespace:VtApp.ViewModels"
-             xmlns:views="clr-namespace:VtApp.Views"
-             StartupUri="MainWindow.xaml">
+             xmlns:views="clr-namespace:VtApp.Views">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
