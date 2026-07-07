@@ -19,18 +19,18 @@
         </DataTemplate>
 
         <DataTemplate x:Key="TaskCardTemplate">
-            <Button Margin="0,0,0,10"
-                    Padding="0"
-                    HorizontalContentAlignment="Stretch"
-                    VerticalContentAlignment="Stretch"
-                    Command="{Binding DataContext.EditTaskCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                    CommandParameter="{Binding}"
-                    Style="{StaticResource MaterialDesignFlatButton}">
-                <Border Padding="12,10"
-                        CornerRadius="8"
-                        Background="{Binding Priority, Converter={StaticResource TaskPriorityToBrushConverter}}"
-                        materialDesign:ElevationAssist.Elevation="Dp2">
-                    <Grid>
+            <Border Margin="0,0,0,10"
+                    Padding="12,10"
+                    CornerRadius="8"
+                    Background="{Binding Priority, Converter={StaticResource TaskPriorityToBrushConverter}}"
+                    materialDesign:ElevationAssist.Elevation="Dp2"
+                    Cursor="Hand">
+                <Border.InputBindings>
+                    <MouseBinding MouseAction="LeftClick"
+                                  Command="{Binding DataContext.EditTaskCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                  CommandParameter="{Binding}" />
+                </Border.InputBindings>
+                <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
@@ -118,7 +118,6 @@
                         </StackPanel>
                     </Grid>
                 </Border>
-            </Button>
         </DataTemplate>
 
         <DataTemplate DataType="{x:Type viewModels:TasksViewModel}">
