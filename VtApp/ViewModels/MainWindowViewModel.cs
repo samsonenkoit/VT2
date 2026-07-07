@@ -22,6 +22,9 @@ public partial class MainWindowViewModel : ObservableObject
 
     partial void OnSelectedPageChanged(string value)
     {
+        if (value != "Tasks")
+            _tasksViewModel.ResetToBoard();
+
         CurrentView = value switch
         {
             "Tasks" => _tasksViewModel,

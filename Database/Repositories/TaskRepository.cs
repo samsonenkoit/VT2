@@ -13,6 +13,18 @@ public class TaskRepository(VtDbContext context) : ITaskRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<TaskDb?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return await context.Tasks.FindAsync([id], cancellationToken);
+    }
+
+    public async Task<TaskDb> AddAsync(TaskDb task, CancellationToken cancellationToken = default)
+    {
+        context.Tasks.Add(task);
+        await context.SaveChangesAsync(cancellationToken);
+        return task;
+    }
+
     public async Task UpdateAsync(TaskDb task, CancellationToken cancellationToken = default)
     {
         context.Tasks.Update(task);

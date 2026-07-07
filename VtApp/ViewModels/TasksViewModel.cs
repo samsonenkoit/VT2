@@ -11,6 +11,7 @@ namespace VtApp.ViewModels;
 public partial class TasksViewModel : ObservableObject
 {
     private readonly ITaskRepository _taskRepository;
+    private readonly TaskEditViewModel _taskEditViewModel;
 
     public ObservableCollection<TaskItem> CriticalTasks { get; } = [];
     public ObservableCollection<TaskItem> UrgentTasks { get; } = [];
@@ -18,13 +19,25 @@ public partial class TasksViewModel : ObservableObject
     public ObservableCollection<TaskItem> NotUrgentTasks { get; } = [];
 
     [ObservableProperty]
+    private object _currentContent;
+
+    [ObservableProperty]
     private bool _isLoading;
 
-    public TasksViewModel(ITaskRepository taskRepository)
+    public TasksViewModel(ITaskRepository taskRepository, TaskEditViewModel taskEditViewModel)
     {
         _taskRepository = taskRepository;
+        _taskEditViewModel = taskEditViewModel;
+        _currentContent = this;
+
+        _taskEditViewModel.Configure(
+            onSaved: () => _ = ReturnToListAsync(reload: true),
+            onCancelled: () => ReturnToList(reload: false));
+
         _ = LoadTasksAsync();
     }
+
+    public void ResetToBoard() => CurrentContent = this;
 
     public async Task LoadTasksAsync()
     {
@@ -47,6 +60,35 @@ public partial class TasksViewModel : ObservableObject
     [RelayCommand]
     private void AddTask()
     {
+        _taskEditViewModel.PrepareForCreate();
+        CurrentContent = _taskEditViewModel;
+    }
+
+    [RelayCommand]
+    private async Task EditTask(TaskItem task) => await OpenEditAsync(task.Id);
+
+    private async Task OpenEditAsync(int taskId)
+    {
+        if (!await _taskEditViewModel.PrepareForEditAsync(taskId))
+            return;
+
+        CurrentContent = _taskEditViewModel;
+    }
+
+    private void ReturnToList(bool reload)
+    {
+        CurrentContent = this;
+
+        if (reload)
+            _ = LoadTasksAsync();
+    }
+
+    private async Task ReturnToListAsync(bool reload)
+    {
+        CurrentContent = this;
+
+        if (reload)
+            await LoadTasksAsync();
     }
 
     private void ClearCollections()

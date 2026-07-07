@@ -4,6 +4,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:viewModels="clr-namespace:VtApp.ViewModels"
+             xmlns:views="clr-namespace:VtApp.Views"
              xmlns:converters="clr-namespace:VtApp.Converters"
              mc:Ignorable="d"
              d:DesignHeight="600"
@@ -12,162 +14,177 @@
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:TaskPriorityToBrushConverter x:Key="TaskPriorityToBrushConverter" />
 
+        <DataTemplate DataType="{x:Type viewModels:TaskEditViewModel}">
+            <views:TaskEditView />
+        </DataTemplate>
+
         <DataTemplate x:Key="TaskCardTemplate">
-            <Border Margin="0,0,0,10"
-                    Padding="12,10"
-                    CornerRadius="8"
-                    Background="{Binding Priority, Converter={StaticResource TaskPriorityToBrushConverter}}"
-                    materialDesign:ElevationAssist.Elevation="Dp2">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="8" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
+            <Button Margin="0,0,0,10"
+                    Padding="0"
+                    HorizontalContentAlignment="Stretch"
+                    VerticalContentAlignment="Stretch"
+                    Command="{Binding DataContext.EditTaskCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                    CommandParameter="{Binding}"
+                    Style="{StaticResource MaterialDesignFlatButton}">
+                <Border Padding="12,10"
+                        CornerRadius="8"
+                        Background="{Binding Priority, Converter={StaticResource TaskPriorityToBrushConverter}}"
+                        materialDesign:ElevationAssist.Elevation="Dp2">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="8" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
 
-                    <Grid Grid.Row="0">
-                        <TextBlock Text="{Binding Title}"
-                                   Foreground="White"
-                                   FontWeight="SemiBold"
-                                   FontSize="13"
-                                   TextTrimming="CharacterEllipsis"
-                                   TextWrapping="NoWrap"
-                                   Margin="0,0,28,0" />
-                        <materialDesign:PackIcon Kind="NotebookOutline"
-                                                 Width="18"
-                                                 Height="18"
-                                                 Foreground="#FFECB3"
-                                                 HorizontalAlignment="Right"
-                                                 VerticalAlignment="Top" />
-                    </Grid>
-
-                    <TextBlock Grid.Row="1"
-                               Text="{Binding DateProgressText}"
-                               Foreground="#FFD54F"
-                               FontSize="12"
-                               Margin="0,4,0,0" />
-
-                    <StackPanel Grid.Row="3"
-                                Orientation="Horizontal"
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Bottom">
-                        <ItemsControl ItemsSource="{Binding BadgeCounts}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <StackPanel Orientation="Horizontal" />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border MinWidth="22"
-                                            Height="22"
-                                            Margin="0,0,4,0"
-                                            Padding="4,0"
-                                            Background="#33FFFFFF"
-                                            BorderBrush="#66FFFFFF"
-                                            BorderThickness="1"
-                                            CornerRadius="3"
-                                            VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding}"
-                                                   Foreground="White"
-                                                   FontSize="11"
-                                                   FontWeight="Medium"
-                                                   HorizontalAlignment="Center"
-                                                   VerticalAlignment="Center" />
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-
-                        <StackPanel Orientation="Horizontal"
-                                    VerticalAlignment="Center"
-                                    Margin="4,0,0,0">
-                            <StackPanel.Style>
-                                <Style TargetType="StackPanel">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding EmailCount}" Value="0">
-                                            <Setter Property="Visibility" Value="Collapsed" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </StackPanel.Style>
-                            <TextBlock Text="{Binding EmailCount}"
+                        <Grid Grid.Row="0">
+                            <TextBlock Text="{Binding Title}"
                                        Foreground="White"
-                                       FontSize="11"
-                                       FontWeight="Medium"
-                                       VerticalAlignment="Center"
-                                       Margin="0,0,4,0" />
-                            <materialDesign:PackIcon Kind="EmailOutline"
-                                                     Width="16"
-                                                     Height="16"
-                                                     Foreground="#90CAF9" />
+                                       FontWeight="SemiBold"
+                                       FontSize="13"
+                                       TextTrimming="CharacterEllipsis"
+                                       TextWrapping="NoWrap"
+                                       Margin="0,0,28,0" />
+                            <materialDesign:PackIcon Kind="NotebookOutline"
+                                                     Width="18"
+                                                     Height="18"
+                                                     Foreground="#FFECB3"
+                                                     HorizontalAlignment="Right"
+                                                     VerticalAlignment="Top" />
+                        </Grid>
+
+                        <TextBlock Grid.Row="1"
+                                   Text="{Binding DateProgressText}"
+                                   Foreground="#FFD54F"
+                                   FontSize="12"
+                                   Margin="0,4,0,0" />
+
+                        <StackPanel Grid.Row="3"
+                                    Orientation="Horizontal"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Bottom">
+                            <ItemsControl ItemsSource="{Binding BadgeCounts}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border MinWidth="22"
+                                                Height="22"
+                                                Margin="0,0,4,0"
+                                                Padding="4,0"
+                                                Background="#33FFFFFF"
+                                                BorderBrush="#66FFFFFF"
+                                                BorderThickness="1"
+                                                CornerRadius="3"
+                                                VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding}"
+                                                       Foreground="White"
+                                                       FontSize="11"
+                                                       FontWeight="Medium"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center" />
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <StackPanel Orientation="Horizontal"
+                                        VerticalAlignment="Center"
+                                        Margin="4,0,0,0">
+                                <StackPanel.Style>
+                                    <Style TargetType="StackPanel">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding EmailCount}" Value="0">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
+                                <TextBlock Text="{Binding EmailCount}"
+                                           Foreground="White"
+                                           FontSize="11"
+                                           FontWeight="Medium"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,4,0" />
+                                <materialDesign:PackIcon Kind="EmailOutline"
+                                                         Width="16"
+                                                         Height="16"
+                                                         Foreground="#90CAF9" />
+                            </StackPanel>
                         </StackPanel>
-                    </StackPanel>
+                    </Grid>
+                </Border>
+            </Button>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type viewModels:TasksViewModel}">
+            <Grid Background="{DynamicResource MaterialDesign.Brush.Background}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="8" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="8" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="8" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <ScrollViewer Grid.Column="0"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <ItemsControl ItemsSource="{Binding CriticalTasks}"
+                                      ItemTemplate="{StaticResource TaskCardTemplate}" />
+                    </ScrollViewer>
+
+                    <ScrollViewer Grid.Column="2"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <ItemsControl ItemsSource="{Binding UrgentTasks}"
+                                      ItemTemplate="{StaticResource TaskCardTemplate}" />
+                    </ScrollViewer>
+
+                    <ScrollViewer Grid.Column="4"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <ItemsControl ItemsSource="{Binding MediumTasks}"
+                                      ItemTemplate="{StaticResource TaskCardTemplate}" />
+                    </ScrollViewer>
+
+                    <ScrollViewer Grid.Column="6"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <ItemsControl ItemsSource="{Binding NotUrgentTasks}"
+                                      ItemTemplate="{StaticResource TaskCardTemplate}" />
+                    </ScrollViewer>
                 </Grid>
-            </Border>
+
+                <Button Style="{StaticResource MaterialDesignFloatingActionButton}"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Bottom"
+                        Margin="0,0,8,8"
+                        Command="{Binding AddTaskCommand}"
+                        ToolTip="Добавить задачу"
+                        materialDesign:ElevationAssist.Elevation="Dp6">
+                    <materialDesign:PackIcon Kind="Plus"
+                                             Width="24"
+                                             Height="24" />
+                </Button>
+
+                <Border Background="#80FFFFFF"
+                        Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
+                                 IsIndeterminate="True"
+                                 Width="48"
+                                 Height="48" />
+                </Border>
+            </Grid>
         </DataTemplate>
     </UserControl.Resources>
 
-    <Grid Background="{DynamicResource MaterialDesign.Brush.Background}">
-        <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="8" />
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="8" />
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="8" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
-
-        <ScrollViewer Grid.Column="0"
-                      VerticalScrollBarVisibility="Auto"
-                      HorizontalScrollBarVisibility="Disabled">
-            <ItemsControl ItemsSource="{Binding CriticalTasks}"
-                          ItemTemplate="{StaticResource TaskCardTemplate}" />
-        </ScrollViewer>
-
-        <ScrollViewer Grid.Column="2"
-                      VerticalScrollBarVisibility="Auto"
-                      HorizontalScrollBarVisibility="Disabled">
-            <ItemsControl ItemsSource="{Binding UrgentTasks}"
-                          ItemTemplate="{StaticResource TaskCardTemplate}" />
-        </ScrollViewer>
-
-        <ScrollViewer Grid.Column="4"
-                      VerticalScrollBarVisibility="Auto"
-                      HorizontalScrollBarVisibility="Disabled">
-            <ItemsControl ItemsSource="{Binding MediumTasks}"
-                          ItemTemplate="{StaticResource TaskCardTemplate}" />
-        </ScrollViewer>
-
-        <ScrollViewer Grid.Column="6"
-                      VerticalScrollBarVisibility="Auto"
-                      HorizontalScrollBarVisibility="Disabled">
-            <ItemsControl ItemsSource="{Binding NotUrgentTasks}"
-                          ItemTemplate="{StaticResource TaskCardTemplate}" />
-        </ScrollViewer>
-        </Grid>
-
-        <Button Style="{StaticResource MaterialDesignFloatingActionButton}"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Bottom"
-                Margin="0,0,8,8"
-                Command="{Binding AddTaskCommand}"
-                ToolTip="Добавить задачу"
-                materialDesign:ElevationAssist.Elevation="Dp6">
-            <materialDesign:PackIcon Kind="Plus"
-                                     Width="24"
-                                     Height="24" />
-        </Button>
-
-        <Border Background="#80FFFFFF"
-                Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
-                         IsIndeterminate="True"
-                         Width="48"
-                         Height="48" />
-        </Border>
-    </Grid>
+    <ContentControl Content="{Binding CurrentContent}" />
 </UserControl>

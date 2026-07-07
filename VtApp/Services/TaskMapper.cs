@@ -7,6 +7,7 @@ public static class TaskMapper
 {
     public static TaskItem ToTaskItem(TaskDb db) => new()
     {
+        Id = db.Id,
         Title = db.Title,
         DueDate = db.DueDate,
         ProgressPercent = db.ProgressPercent,

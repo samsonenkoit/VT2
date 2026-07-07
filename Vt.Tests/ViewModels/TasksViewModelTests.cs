@@ -10,14 +10,13 @@ public class TasksViewModelTests
     [Fact]
     public async Task LoadTasksAsync_PopulatesColumnsByPriority()
     {
-        var repository = new FakeTaskRepository(
+        var viewModel = CreateViewModel(new FakeTaskRepository(
         [
-            CreateTask("Критическая", TaskPriority.Critical),
-            CreateTask("Срочная", TaskPriority.Urgent),
-            CreateTask("Средняя", TaskPriority.Medium),
-            CreateTask("Несрочная", TaskPriority.NotUrgent),
-        ]);
-        var viewModel = new TasksViewModel(repository);
+            CreateTask(1, "Критическая", TaskPriority.Critical),
+            CreateTask(2, "Срочная", TaskPriority.Urgent),
+            CreateTask(3, "Средняя", TaskPriority.Medium),
+            CreateTask(4, "Несрочная", TaskPriority.NotUrgent),
+        ]));
 
         await viewModel.LoadTasksAsync();
 
@@ -32,7 +31,7 @@ public class TasksViewModelTests
     [Fact]
     public async Task LoadTasksAsync_WhenNoTasks_CollectionsAreEmpty()
     {
-        var viewModel = new TasksViewModel(new FakeTaskRepository([]));
+        var viewModel = CreateViewModel(new FakeTaskRepository([]));
 
         await viewModel.LoadTasksAsync();
 
@@ -46,32 +45,97 @@ public class TasksViewModelTests
     [Fact]
     public async Task LoadTasksAsync_MapsTaskWithoutEmailAndBadges()
     {
-        var viewModel = new TasksViewModel(new FakeTaskRepository(
+        var viewModel = CreateViewModel(new FakeTaskRepository(
         [
-            CreateTask("Из БД", TaskPriority.Medium, progressPercent: 42),
+            CreateTask(1, "Из БД", TaskPriority.Medium, progressPercent: 42),
         ]));
 
         await viewModel.LoadTasksAsync();
 
         var task = Assert.Single(viewModel.MediumTasks);
+        Assert.Equal(1, task.Id);
         Assert.Equal(0, task.EmailCount);
         Assert.Empty(task.BadgeCounts);
         Assert.Equal(42, task.ProgressPercent);
     }
 
-    private static TaskDb CreateTask(string title, TaskPriority priority, int progressPercent = 0) =>
+    [Fact]
+    public void AddTask_SetsCurrentContentToEditViewModel()
+    {
+        var viewModel = CreateViewModel(new FakeTaskRepository([]));
+
+        viewModel.AddTaskCommand.Execute(null);
+
+        Assert.IsType<TaskEditViewModel>(viewModel.CurrentContent);
+        var editViewModel = (TaskEditViewModel)viewModel.CurrentContent;
+        Assert.False(editViewModel.IsEditMode);
+    }
+
+    [Fact]
+    public async Task EditTask_SetsCurrentContentToEditViewModel()
+    {
+        var viewModel = CreateViewModel(new FakeTaskRepository(
+        [
+            CreateTask(5, "Редактировать", TaskPriority.Medium),
+        ]));
+
+        await viewModel.LoadTasksAsync();
+        var task = viewModel.MediumTasks.Single();
+
+        await viewModel.EditTaskCommand.ExecuteAsync(task);
+
+        Assert.IsType<TaskEditViewModel>(viewModel.CurrentContent);
+        var editViewModel = (TaskEditViewModel)viewModel.CurrentContent;
+        Assert.True(editViewModel.IsEditMode);
+        Assert.Equal("Редактировать", editViewModel.Title);
+    }
+
+    [Fact]
+    public void ResetToBoard_SetsCurrentContentToTasksViewModel()
+    {
+        var viewModel = CreateViewModel(new FakeTaskRepository([]));
+        viewModel.AddTaskCommand.Execute(null);
+
+        viewModel.ResetToBoard();
+
+        Assert.Same(viewModel, viewModel.CurrentContent);
+    }
+
+    private static TasksViewModel CreateViewModel(FakeTaskRepository repository)
+    {
+        var editViewModel = new TaskEditViewModel(repository);
+        var tasksViewModel = new TasksViewModel(repository, editViewModel);
+        return tasksViewModel;
+    }
+
+    private static TaskDb CreateTask(
+        int id,
+        string title,
+        TaskPriority priority,
+        int progressPercent = 0) =>
         new()
         {
+            Id = id,
             Title = title,
             DueDate = new DateTime(2026, 4, 1),
             ProgressPercent = progressPercent,
             Priority = priority,
         };
 
-    private sealed class FakeTaskRepository(IReadOnlyList<TaskDb> tasks) : ITaskRepository
+    private sealed class FakeTaskRepository : ITaskRepository
     {
+        private readonly IReadOnlyList<TaskDb> _tasks;
+
+        public FakeTaskRepository(IReadOnlyList<TaskDb> tasks) => _tasks = tasks;
+
         public Task<IReadOnlyList<TaskDb>> GetAllActiveAsync(CancellationToken cancellationToken = default) =>
-            Task.FromResult(tasks);
+            Task.FromResult(_tasks);
+
+        public Task<TaskDb?> GetByIdAsync(int id, CancellationToken cancellationToken = default) =>
+            Task.FromResult(_tasks.FirstOrDefault(t => t.Id == id));
+
+        public Task<TaskDb> AddAsync(TaskDb task, CancellationToken cancellationToken = default) =>
+            Task.FromResult(task);
 
         public Task UpdateAsync(TaskDb task, CancellationToken cancellationToken = default) =>
             Task.CompletedTask;

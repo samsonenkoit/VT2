@@ -47,17 +47,39 @@ public class MainWindowViewModelTests
         Assert.IsType<TasksViewModel>(viewModel.CurrentView);
     }
 
+    [Fact]
+    public void SelectedPage_WhenChangedToSettings_ResetsTasksNavigation()
+    {
+        var tasksViewModel = CreateTasksViewModel();
+        tasksViewModel.AddTaskCommand.Execute(null);
+
+        var viewModel = new MainWindowViewModel(tasksViewModel, new SettingsViewModel());
+        viewModel.SelectedPage = "Settings";
+
+        Assert.Same(tasksViewModel, tasksViewModel.CurrentContent);
+    }
+
     private static MainWindowViewModel CreateViewModel()
     {
-        var tasksViewModel = new TasksViewModel(new EmptyTaskRepository());
-        return new MainWindowViewModel(tasksViewModel, new SettingsViewModel());
+        return new MainWindowViewModel(CreateTasksViewModel(), new SettingsViewModel());
+    }
+
+    private static TasksViewModel CreateTasksViewModel()
+    {
+        var repository = new EmptyTaskRepository();
+        return new TasksViewModel(repository, new TaskEditViewModel(repository));
     }
 
     private sealed class EmptyTaskRepository : ITaskRepository
     {
-        public Task<IReadOnlyList<TaskDb>> GetAllActiveAsync(
-            CancellationToken cancellationToken = default) =>
+        public Task<IReadOnlyList<TaskDb>> GetAllActiveAsync(CancellationToken cancellationToken = default) =>
             Task.FromResult<IReadOnlyList<TaskDb>>([]);
+
+        public Task<TaskDb?> GetByIdAsync(int id, CancellationToken cancellationToken = default) =>
+            Task.FromResult<TaskDb?>(null);
+
+        public Task<TaskDb> AddAsync(TaskDb task, CancellationToken cancellationToken = default) =>
+            Task.FromResult(task);
 
         public Task UpdateAsync(TaskDb task, CancellationToken cancellationToken = default) =>
             Task.CompletedTask;

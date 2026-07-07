@@ -16,6 +16,7 @@ public static class ServiceCollectionExtensions
             options.UseSqlite($"Data Source={databasePath}"));
 
         services.AddScoped<ITaskRepository, TaskRepository>();
+        services.AddTransient<TaskEditViewModel>();
         services.AddTransient<TasksViewModel>();
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<MainWindowViewModel>();

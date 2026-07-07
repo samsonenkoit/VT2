@@ -59,6 +59,33 @@ public class TaskRepositoryTests : IDisposable
         Assert.Equal(75, active[0].ProgressPercent);
     }
 
+    [Fact]
+    public async Task GetByIdAsync_ReturnsTask()
+    {
+        var task = CreateTask("Найти по Id");
+        _context.Tasks.Add(task);
+        await _context.SaveChangesAsync();
+
+        var found = await _repository.GetByIdAsync(task.Id);
+
+        Assert.NotNull(found);
+        Assert.Equal("Найти по Id", found.Title);
+    }
+
+    [Fact]
+    public async Task AddAsync_PersistsTask()
+    {
+        var task = CreateTask("Новая задача");
+
+        var created = await _repository.AddAsync(task);
+
+        Assert.True(created.Id > 0);
+
+        var found = await _repository.GetByIdAsync(created.Id);
+        Assert.NotNull(found);
+        Assert.Equal("Новая задача", found.Title);
+    }
+
     private static TaskDb CreateTask(
         string title,
         TaskPriority priority = TaskPriority.Medium,

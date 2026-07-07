@@ -4,6 +4,8 @@ namespace VtApp.Models;
 
 public class TaskItem
 {
+    public int Id { get; init; }
+
     public required string Title { get; init; }
 
     public DateTime DueDate { get; init; }
