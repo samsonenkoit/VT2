@@ -22,7 +22,9 @@ public sealed class DatabaseInitializer(IDatabasePathProvider pathProvider)
         if (!isNewDatabase)
             return;
 
-        context.Tasks.AddRange(TaskSeedData.GetTasks());
+        var (tasks, subtasks) = TaskSeedData.GetSeedData();
+        context.Tasks.AddRange(tasks);
+        context.Subtasks.AddRange(subtasks);
         context.SaveChanges();
     }
 

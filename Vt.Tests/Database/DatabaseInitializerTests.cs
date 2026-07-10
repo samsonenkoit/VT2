@@ -27,7 +27,7 @@ public class DatabaseInitializerTests : IDisposable
         using (var context = CreateContext(pathProvider.GetDatabaseFilePath()))
         {
             var taskCount = context.Tasks.Count(t => t.DeletedAt == null);
-            Assert.Equal(TaskSeedData.GetTasks().Count, taskCount);
+            Assert.Equal(TaskSeedData.GetSeedData().Tasks.Count, taskCount);
         }
     }
 
@@ -41,6 +41,7 @@ public class DatabaseInitializerTests : IDisposable
 
         using (var context = CreateContext(pathProvider.GetDatabaseFilePath()))
         {
+            context.Subtasks.RemoveRange(context.Subtasks);
             context.Tasks.RemoveRange(context.Tasks);
             context.SaveChanges();
         }
@@ -66,7 +67,7 @@ public class DatabaseInitializerTests : IDisposable
         var repository = new TaskRepository(context);
         var activeTasks = await repository.GetAllActiveAsync();
 
-        Assert.Equal(TaskSeedData.GetTasks().Count, activeTasks.Count);
+        Assert.Equal(TaskSeedData.GetSeedData().Tasks.Count, activeTasks.Count);
     }
 
     private static VtDbContext CreateContext(string databasePath)

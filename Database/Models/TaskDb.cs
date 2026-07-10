@@ -13,4 +13,6 @@ public class TaskDb
     public TaskPriority Priority { get; set; }
 
     public DateTime? DeletedAt { get; set; }
+
+    public ICollection<SubtaskDb> Subtasks { get; set; } = [];
 }
