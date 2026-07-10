@@ -7,19 +7,30 @@
              mc:Ignorable="d"
              d:DesignHeight="600"
              d:DesignWidth="1000">
-    <StackPanel MaxWidth="480"
-                HorizontalAlignment="Left">
-        <TextBlock Text="{Binding PageTitle}"
-                   Style="{StaticResource MaterialDesignHeadline5TextBlock}"
-                   Margin="0,0,0,24" />
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
-        <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
-                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                 materialDesign:HintAssist.Hint="Название"
-                 Margin="0,0,0,24" />
+        <StackPanel Grid.Row="0"
+                    MaxWidth="480"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top">
+            <TextBlock Text="{Binding PageTitle}"
+                       Style="{StaticResource MaterialDesignHeadline5TextBlock}"
+                       Margin="0,0,0,24" />
 
-        <StackPanel Orientation="Horizontal"
-                    HorizontalAlignment="Right">
+            <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
+                     Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                     materialDesign:HintAssist.Hint="Название" />
+        </StackPanel>
+
+        <StackPanel Grid.Row="1"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    Margin="0,0,0,8">
             <Button Content="Отмена"
                     Style="{StaticResource MaterialDesignOutlinedButton}"
                     Margin="0,0,8,0"
@@ -28,5 +39,5 @@
                     Style="{StaticResource MaterialDesignRaisedButton}"
                     Command="{Binding SaveCommand}" />
         </StackPanel>
-    </StackPanel>
+    </Grid>
 </UserControl>
