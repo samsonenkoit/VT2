@@ -8,7 +8,7 @@ public class TaskItem
 
     public required string Title { get; init; }
 
-    public DateTime DueDate { get; init; }
+    public DateTime DueDateUtc { get; init; }
 
     public int ProgressPercent { get; init; }
 
@@ -18,5 +18,5 @@ public class TaskItem
 
     public IReadOnlyList<int> BadgeCounts { get; init; } = [];
 
-    public string DateProgressText => $"{DueDate:dd.MM.yyyy} - {ProgressPercent}%";
+    public string DateProgressText => $"{DueDateUtc:dd.MM.yyyy} - {ProgressPercent}%";
 }

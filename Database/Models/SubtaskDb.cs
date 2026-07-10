@@ -10,5 +10,5 @@ public class SubtaskDb
 
     public TaskDb Task { get; set; } = null!;
 
-    public DateTime? DeletedAt { get; set; }
+    public DateTime? DeletedAtUtc { get; set; }
 }

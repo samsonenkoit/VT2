@@ -42,7 +42,7 @@ public partial class TaskEditViewModel : ObservableObject
     public async Task<bool> PrepareForEditAsync(int taskId)
     {
         var task = await _taskRepository.GetByIdAsync(taskId);
-        if (task is null || task.DeletedAt is not null)
+        if (task is null || task.DeletedAtUtc is not null)
             return false;
 
         _taskId = taskId;
@@ -65,7 +65,7 @@ public partial class TaskEditViewModel : ObservableObject
             await _taskRepository.AddAsync(new TaskDb
             {
                 Title = trimmedTitle,
-                DueDate = DateTime.Today,
+                DueDateUtc = DateTime.Today,
                 ProgressPercent = 0,
                 Priority = TaskPriority.Medium,
             });

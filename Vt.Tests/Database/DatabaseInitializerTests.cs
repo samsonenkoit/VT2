@@ -26,7 +26,7 @@ public class DatabaseInitializerTests : IDisposable
 
         using (var context = CreateContext(pathProvider.GetDatabaseFilePath()))
         {
-            var taskCount = context.Tasks.Count(t => t.DeletedAt == null);
+            var taskCount = context.Tasks.Count(t => t.DeletedAtUtc == null);
             Assert.Equal(TaskSeedData.GetSeedData().Tasks.Count, taskCount);
         }
     }

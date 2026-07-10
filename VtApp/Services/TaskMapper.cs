@@ -9,7 +9,7 @@ public static class TaskMapper
     {
         Id = db.Id,
         Title = db.Title,
-        DueDate = db.DueDate,
+        DueDateUtc = db.DueDateUtc,
         ProgressPercent = db.ProgressPercent,
         Priority = db.Priority,
         EmailCount = 0,

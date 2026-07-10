@@ -42,7 +42,7 @@ public class TaskEditViewModelTests
         Assert.Equal("Новая задача", added.Title);
         Assert.Equal(TaskPriority.Medium, added.Priority);
         Assert.Equal(0, added.ProgressPercent);
-        Assert.Equal(DateTime.Today, added.DueDate.Date);
+        Assert.Equal(DateTime.Today, added.DueDateUtc.Date);
     }
 
     [Fact]
@@ -52,7 +52,7 @@ public class TaskEditViewModelTests
         {
             Id = 7,
             Title = "Старое",
-            DueDate = new DateTime(2026, 4, 1),
+            DueDateUtc = new DateTime(2026, 4, 1),
             ProgressPercent = 10,
             Priority = TaskPriority.Urgent,
         };
@@ -88,7 +88,7 @@ public class TaskEditViewModelTests
         {
             Id = 3,
             Title = "Редактируемая",
-            DueDate = new DateTime(2026, 4, 1),
+            DueDateUtc = new DateTime(2026, 4, 1),
             ProgressPercent = 0,
             Priority = TaskPriority.Medium,
         };
@@ -120,7 +120,7 @@ public class TaskEditViewModelTests
         public List<TaskDb> UpdatedTasks { get; } = [];
 
         public Task<IReadOnlyList<TaskDb>> GetAllActiveAsync(CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyList<TaskDb>>(tasks.Where(t => t.DeletedAt is null).ToList());
+            Task.FromResult<IReadOnlyList<TaskDb>>(tasks.Where(t => t.DeletedAtUtc is null).ToList());
 
         public Task<TaskDb?> GetByIdAsync(int id, CancellationToken cancellationToken = default) =>
             Task.FromResult(tasks.FirstOrDefault(t => t.Id == id));

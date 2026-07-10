@@ -117,7 +117,7 @@ public class TasksViewModelTests
         {
             Id = id,
             Title = title,
-            DueDate = new DateTime(2026, 4, 1),
+            DueDateUtc = new DateTime(2026, 4, 1),
             ProgressPercent = progressPercent,
             Priority = priority,
         };

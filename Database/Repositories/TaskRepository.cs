@@ -8,8 +8,8 @@ public class TaskRepository(VtDbContext context) : ITaskRepository
     public async Task<IReadOnlyList<TaskDb>> GetAllActiveAsync(CancellationToken cancellationToken = default)
     {
         return await context.Tasks
-            .Where(t => t.DeletedAt == null)
-            .OrderBy(t => t.DueDate)
+            .Where(t => t.DeletedAtUtc == null)
+            .OrderBy(t => t.DueDateUtc)
             .ToListAsync(cancellationToken);
     }
 

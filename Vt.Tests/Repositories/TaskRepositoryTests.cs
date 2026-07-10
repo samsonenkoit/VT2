@@ -95,10 +95,10 @@ public class TaskRepositoryTests : IDisposable
         return new TaskDb
         {
             Title = title,
-            DueDate = new DateTime(2026, 4, 1),
+            DueDateUtc = new DateTime(2026, 4, 1),
             ProgressPercent = progressPercent,
             Priority = priority,
-            DeletedAt = deletedAt,
+            DeletedAtUtc = deletedAt,
         };
     }
 
