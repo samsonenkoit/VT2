@@ -81,6 +81,32 @@ public class SubtaskRepositoryTests : IDisposable
     }
 
     [Fact]
+    public async Task UpdateAsync_WhenEntityAlreadyTracked_UpdatesWithoutConflict()
+    {
+        var task = CreateTask("Задача");
+        _context.Tasks.Add(task);
+        await _context.SaveChangesAsync();
+
+        var subtask = CreateSubtask("Старое название", task.Id);
+        _context.Subtasks.Add(subtask);
+        await _context.SaveChangesAsync();
+
+        await _repository.GetNotDeletedAsync(task.Id);
+
+        await _repository.UpdateAsync(new SubtaskDb
+        {
+            Id = subtask.Id,
+            Title = "Новое название",
+            TaskId = task.Id,
+        });
+
+        var subtasks = await _repository.GetNotDeletedAsync(task.Id);
+
+        Assert.Single(subtasks);
+        Assert.Equal("Новое название", subtasks[0].Title);
+    }
+
+    [Fact]
     public async Task UpdateAsync_PersistsChanges()
     {
         var task = CreateTask("Задача");

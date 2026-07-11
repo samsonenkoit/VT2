@@ -23,7 +23,12 @@ public class SubtaskRepository(VtDbContext context) : ISubtaskRepository
 
     public async Task UpdateAsync(SubtaskDb subtask, CancellationToken cancellationToken = default)
     {
-        context.Subtasks.Update(subtask);
+        var existing = await context.Subtasks.FindAsync([subtask.Id], cancellationToken);
+        if (existing is null)
+            return;
+
+        existing.Title = subtask.Title;
+        existing.TaskId = subtask.TaskId;
         await context.SaveChangesAsync(cancellationToken);
     }
 }

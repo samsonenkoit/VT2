@@ -1,5 +1,6 @@
 using Database.Models;
 using Database.Repositories;
+using VtApp.Models;
 using VtApp.ViewModels;
 using Xunit;
 
@@ -102,12 +103,119 @@ public class TaskEditViewModelTests
         Assert.Equal("Редактирование задачи", viewModel.PageTitle);
     }
 
+    [Fact]
+    public async Task PrepareForEditAsync_LoadsSubtasks()
+    {
+        var task = new TaskDb
+        {
+            Id = 1,
+            Title = "Задача",
+            DueDateUtc = new DateTime(2026, 4, 1),
+            ProgressPercent = 0,
+            Priority = TaskPriority.Medium,
+        };
+        var subtaskRepository = new FakeSubtaskRepository(
+        [
+            new SubtaskDb { Id = 10, Title = "Подзадача 1", TaskId = 1 },
+            new SubtaskDb { Id = 11, Title = "Подзадача 2", TaskId = 1 },
+        ]);
+        var viewModel = CreateViewModel(new FakeTaskRepository([task]), subtaskRepository);
+
+        await viewModel.PrepareForEditAsync(1);
+
+        Assert.Equal(2, viewModel.Subtasks.Count);
+        Assert.Equal("Подзадача 1", viewModel.Subtasks[0].Title);
+        Assert.Equal(10, viewModel.Subtasks[0].Id);
+        Assert.Equal("Подзадача 2", viewModel.Subtasks[1].Title);
+    }
+
+    [Fact]
+    public void AddSubtaskCommand_AddsToCollection()
+    {
+        var subtaskRepository = new FakeSubtaskRepository([]);
+        var viewModel = CreateViewModel(new FakeTaskRepository([]), subtaskRepository);
+        viewModel.PrepareForCreate();
+        viewModel.NewSubtaskTitle = "  Новая подзадача  ";
+
+        viewModel.AddSubtaskCommand.Execute(null);
+
+        var subtask = Assert.Single(viewModel.Subtasks);
+        Assert.Equal("Новая подзадача", subtask.Title);
+        Assert.Equal(0, subtask.Id);
+        Assert.Equal(string.Empty, viewModel.NewSubtaskTitle);
+        Assert.Empty(subtaskRepository.AddedSubtasks);
+    }
+
+    [Fact]
+    public async Task SaveAsync_Create_PersistsSubtasks()
+    {
+        var taskRepository = new FakeTaskRepository([]);
+        var subtaskRepository = new FakeSubtaskRepository([]);
+        var viewModel = CreateViewModel(taskRepository, subtaskRepository);
+
+        viewModel.PrepareForCreate();
+        viewModel.Title = "Задача";
+        viewModel.Subtasks.Add(new SubtaskEditItem { Title = "Шаг 1" });
+        viewModel.Subtasks.Add(new SubtaskEditItem { Title = "Шаг 2" });
+        await viewModel.SaveCommand.ExecuteAsync(null);
+
+        Assert.Equal(2, subtaskRepository.AddedSubtasks.Count);
+        Assert.All(subtaskRepository.AddedSubtasks, s => Assert.Equal(1, s.TaskId));
+        Assert.Equal("Шаг 1", subtaskRepository.AddedSubtasks[0].Title);
+        Assert.Equal("Шаг 2", subtaskRepository.AddedSubtasks[1].Title);
+    }
+
+    [Fact]
+    public async Task SaveAsync_Edit_UpdatesAndAddsSubtasks()
+    {
+        var task = new TaskDb
+        {
+            Id = 5,
+            Title = "Задача",
+            DueDateUtc = new DateTime(2026, 4, 1),
+            ProgressPercent = 0,
+            Priority = TaskPriority.Medium,
+        };
+        var subtaskRepository = new FakeSubtaskRepository(
+        [
+            new SubtaskDb { Id = 20, Title = "Старая", TaskId = 5 },
+        ]);
+        var viewModel = CreateViewModel(new FakeTaskRepository([task]), subtaskRepository);
+
+        await viewModel.PrepareForEditAsync(5);
+        viewModel.Subtasks[0].Title = "Обновлённая";
+        viewModel.Subtasks.Add(new SubtaskEditItem { Title = "Новая" });
+        await viewModel.SaveCommand.ExecuteAsync(null);
+
+        Assert.Single(subtaskRepository.UpdatedSubtasks);
+        Assert.Equal("Обновлённая", subtaskRepository.UpdatedSubtasks[0].Title);
+        Assert.Equal(20, subtaskRepository.UpdatedSubtasks[0].Id);
+
+        var added = Assert.Single(subtaskRepository.AddedSubtasks);
+        Assert.Equal("Новая", added.Title);
+        Assert.Equal(5, added.TaskId);
+    }
+
+    [Fact]
+    public void PrepareForCreate_ClearsSubtasks()
+    {
+        var viewModel = CreateViewModel(new FakeTaskRepository([]));
+        viewModel.Subtasks.Add(new SubtaskEditItem { Title = "Остаток" });
+        viewModel.NewSubtaskTitle = "Черновик";
+
+        viewModel.PrepareForCreate();
+
+        Assert.Empty(viewModel.Subtasks);
+        Assert.Equal(string.Empty, viewModel.NewSubtaskTitle);
+    }
+
     private static TaskEditViewModel CreateViewModel(
         FakeTaskRepository repository,
+        FakeSubtaskRepository? subtaskRepository = null,
         Action? onSaved = null,
         Action? onCancelled = null)
     {
-        var viewModel = new TaskEditViewModel(repository);
+        var viewModel = new TaskEditViewModel(repository, subtaskRepository ?? new FakeSubtaskRepository([]));
         viewModel.Configure(
             onSaved ?? (() => { }),
             onCancelled ?? (() => { }));
@@ -135,6 +243,29 @@ public class TaskEditViewModelTests
         public Task UpdateAsync(TaskDb task, CancellationToken cancellationToken = default)
         {
             UpdatedTasks.Add(task);
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class FakeSubtaskRepository(IReadOnlyList<SubtaskDb> subtasks) : ISubtaskRepository
+    {
+        public List<SubtaskDb> AddedSubtasks { get; } = [];
+        public List<SubtaskDb> UpdatedSubtasks { get; } = [];
+
+        public Task<IReadOnlyList<SubtaskDb>> GetNotDeletedAsync(int taskId, CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<SubtaskDb>>(
+                subtasks.Where(s => s.TaskId == taskId && s.DeletedAtUtc is null).ToList());
+
+        public Task<SubtaskDb> AddAsync(SubtaskDb subtask, CancellationToken cancellationToken = default)
+        {
+            subtask.Id = subtasks.Count + AddedSubtasks.Count + 1;
+            AddedSubtasks.Add(subtask);
+            return Task.FromResult(subtask);
+        }
+
+        public Task UpdateAsync(SubtaskDb subtask, CancellationToken cancellationToken = default)
+        {
+            UpdatedSubtasks.Add(subtask);
             return Task.CompletedTask;
         }
     }

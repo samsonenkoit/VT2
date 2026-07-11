@@ -67,7 +67,7 @@ public class MainWindowViewModelTests
     private static TasksViewModel CreateTasksViewModel()
     {
         var repository = new EmptyTaskRepository();
-        return new TasksViewModel(repository, new TaskEditViewModel(repository));
+        return new TasksViewModel(repository, new TaskEditViewModel(repository, new EmptySubtaskRepository()));
     }
 
     private sealed class EmptyTaskRepository : ITaskRepository
@@ -82,6 +82,18 @@ public class MainWindowViewModelTests
             Task.FromResult(task);
 
         public Task UpdateAsync(TaskDb task, CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
+    }
+
+    private sealed class EmptySubtaskRepository : ISubtaskRepository
+    {
+        public Task<IReadOnlyList<SubtaskDb>> GetNotDeletedAsync(int taskId, CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<SubtaskDb>>([]);
+
+        public Task<SubtaskDb> AddAsync(SubtaskDb subtask, CancellationToken cancellationToken = default) =>
+            Task.FromResult(subtask);
+
+        public Task UpdateAsync(SubtaskDb subtask, CancellationToken cancellationToken = default) =>
             Task.CompletedTask;
     }
 }

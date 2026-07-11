@@ -13,18 +13,54 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0"
-                    MaxWidth="480"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Top">
-            <TextBlock Text="{Binding PageTitle}"
-                       Style="{StaticResource MaterialDesignHeadline5TextBlock}"
-                       Margin="0,0,0,24" />
+        <ScrollViewer Grid.Row="0"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
+            <StackPanel MaxWidth="480"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Top">
+                <TextBlock Text="{Binding PageTitle}"
+                           Style="{StaticResource MaterialDesignHeadline5TextBlock}"
+                           Margin="0,0,0,24" />
 
-            <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
-                     Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                     materialDesign:HintAssist.Hint="Название" />
-        </StackPanel>
+                <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
+                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                         materialDesign:HintAssist.Hint="Название"
+                         Margin="0,0,0,24" />
+
+                <TextBlock Text="Подзадачи"
+                           Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
+                           Margin="0,0,0,8" />
+
+                <ItemsControl ItemsSource="{Binding Subtasks}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                     Margin="0,0,0,8" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <Grid Margin="0,8,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBox Grid.Column="0"
+                             Text="{Binding NewSubtaskTitle, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                             materialDesign:HintAssist.Hint="Новая подзадача"
+                             Margin="0,0,8,0" />
+
+                    <Button Grid.Column="1"
+                            Content="Добавить"
+                            Style="{StaticResource MaterialDesignOutlinedButton}"
+                            Command="{Binding AddSubtaskCommand}" />
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
 
         <StackPanel Grid.Row="1"
                     Orientation="Horizontal"

@@ -103,7 +103,7 @@ public class TasksViewModelTests
 
     private static TasksViewModel CreateViewModel(FakeTaskRepository repository)
     {
-        var editViewModel = new TaskEditViewModel(repository);
+        var editViewModel = new TaskEditViewModel(repository, new EmptySubtaskRepository());
         var tasksViewModel = new TasksViewModel(repository, editViewModel);
         return tasksViewModel;
     }
@@ -121,6 +121,18 @@ public class TasksViewModelTests
             ProgressPercent = progressPercent,
             Priority = priority,
         };
+
+    private sealed class EmptySubtaskRepository : ISubtaskRepository
+    {
+        public Task<IReadOnlyList<SubtaskDb>> GetNotDeletedAsync(int taskId, CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<SubtaskDb>>([]);
+
+        public Task<SubtaskDb> AddAsync(SubtaskDb subtask, CancellationToken cancellationToken = default) =>
+            Task.FromResult(subtask);
+
+        public Task UpdateAsync(SubtaskDb subtask, CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
+    }
 
     private sealed class FakeTaskRepository : ITaskRepository
     {
