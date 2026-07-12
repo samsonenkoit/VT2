@@ -1,5 +1,6 @@
 using Database.Models;
 using Database.Repositories;
+using VtApp.Services;
 using VtApp.ViewModels;
 using Xunit;
 
@@ -103,7 +104,10 @@ public class TasksViewModelTests
 
     private static TasksViewModel CreateViewModel(FakeTaskRepository repository)
     {
-        var editViewModel = new TaskEditViewModel(repository, new EmptySubtaskRepository());
+        var editViewModel = new TaskEditViewModel(
+            repository,
+            new EmptySubtaskRepository(),
+            new EmptyTaskFileService());
         var tasksViewModel = new TasksViewModel(repository, editViewModel);
         return tasksViewModel;
     }
@@ -121,6 +125,18 @@ public class TasksViewModelTests
             ProgressPercent = progressPercent,
             Priority = priority,
         };
+
+    private sealed class EmptyTaskFileService : ITaskFileService
+    {
+        public Task<IReadOnlyList<VtApp.Models.TaskFileItem>> GetFilesAsync(int taskId, CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<VtApp.Models.TaskFileItem>>([]);
+
+        public Task<VtApp.Models.TaskFileItem> AddFileAsync(int taskId, string sourceFilePath, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task DeleteFileAsync(int fileId, CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
+    }
 
     private sealed class EmptySubtaskRepository : ISubtaskRepository
     {

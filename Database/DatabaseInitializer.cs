@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Database;
 
-public sealed class DatabaseInitializer(IDatabasePathProvider pathProvider)
+public sealed class DatabaseInitializer(IAppDataPathProvider pathProvider)
 {
     public void Run()
     {
@@ -30,6 +30,6 @@ public sealed class DatabaseInitializer(IDatabasePathProvider pathProvider)
 
     public static void Initialize()
     {
-        new DatabaseInitializer(new AppDataDatabasePathProvider()).Run();
+        new DatabaseInitializer(new AppDataPathProvider()).Run();
     }
 }

@@ -3,7 +3,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Database.Models;
 using Database.Repositories;
+using Microsoft.Win32;
 using VtApp.Models;
+using VtApp.Services;
 
 namespace VtApp.ViewModels;
 
@@ -11,11 +13,16 @@ public partial class TaskEditViewModel : ObservableObject
 {
     private readonly ITaskRepository _taskRepository;
     private readonly ISubtaskRepository _subtaskRepository;
+    private readonly ITaskFileService _taskFileService;
     private Action? _onSaved;
     private Action? _onCancelled;
     private int? _taskId;
 
     public ObservableCollection<SubtaskEditItem> Subtasks { get; } = [];
+
+    public ObservableCollection<TaskFileItem> Files { get; } = [];
+
+    public bool CanManageFiles => _taskId is not null;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
@@ -30,10 +37,14 @@ public partial class TaskEditViewModel : ObservableObject
 
     public string PageTitle => IsEditMode ? "Редактирование задачи" : "Новая задача";
 
-    public TaskEditViewModel(ITaskRepository taskRepository, ISubtaskRepository subtaskRepository)
+    public TaskEditViewModel(
+        ITaskRepository taskRepository,
+        ISubtaskRepository subtaskRepository,
+        ITaskFileService taskFileService)
     {
         _taskRepository = taskRepository;
         _subtaskRepository = subtaskRepository;
+        _taskFileService = taskFileService;
     }
 
     public void Configure(Action onSaved, Action onCancelled)
@@ -49,6 +60,8 @@ public partial class TaskEditViewModel : ObservableObject
         Title = string.Empty;
         Subtasks.Clear();
         NewSubtaskTitle = string.Empty;
+        Files.Clear();
+        NotifyFilesStateChanged();
     }
 
     public async Task<bool> PrepareForEditAsync(int taskId)
@@ -73,6 +86,13 @@ public partial class TaskEditViewModel : ObservableObject
         }
 
         NewSubtaskTitle = string.Empty;
+
+        var files = await _taskFileService.GetFilesAsync(taskId);
+        Files.Clear();
+        foreach (var file in files)
+            Files.Add(file);
+
+        NotifyFilesStateChanged();
         return true;
     }
 
@@ -82,11 +102,34 @@ public partial class TaskEditViewModel : ObservableObject
 
     private bool CanAddSubtask() => !string.IsNullOrWhiteSpace(NewSubtaskTitle);
 
+    private bool CanAddFile() => CanManageFiles;
+
     [RelayCommand(CanExecute = nameof(CanAddSubtask))]
     private void AddSubtask()
     {
         Subtasks.Add(new SubtaskEditItem { Title = NewSubtaskTitle.Trim() });
         NewSubtaskTitle = string.Empty;
+    }
+
+    [RelayCommand(CanExecute = nameof(CanAddFile))]
+    private async Task AddFileAsync()
+    {
+        if (_taskId is null)
+            return;
+
+        var sourcePath = PickFile();
+        if (sourcePath is null)
+            return;
+
+        var file = await _taskFileService.AddFileAsync(_taskId.Value, sourcePath);
+        Files.Add(file);
+    }
+
+    [RelayCommand(CanExecute = nameof(CanAddFile))]
+    private async Task DeleteFileAsync(TaskFileItem file)
+    {
+        await _taskFileService.DeleteFileAsync(file.Id);
+        Files.Remove(file);
     }
 
     [RelayCommand(CanExecute = nameof(CanSave))]
@@ -149,5 +192,24 @@ public partial class TaskEditViewModel : ObservableObject
                 });
             }
         }
+    }
+
+    private static string? PickFile()
+    {
+        var dialog = new OpenFileDialog
+        {
+            Title = "Выберите файл",
+            CheckFileExists = true,
+            Multiselect = false,
+        };
+
+        return dialog.ShowDialog() == true ? dialog.FileName : null;
+    }
+
+    private void NotifyFilesStateChanged()
+    {
+        OnPropertyChanged(nameof(CanManageFiles));
+        AddFileCommand.NotifyCanExecuteChanged();
+        DeleteFileCommand.NotifyCanExecuteChanged();
     }
 }

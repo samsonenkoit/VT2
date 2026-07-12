@@ -74,12 +74,79 @@
                 </ScrollViewer>
             </TabItem>
 
-            <TabItem ToolTip="Файлы">
+            <TabItem ToolTip="Файлы"
+                     IsEnabled="{Binding CanManageFiles}">
                 <TabItem.Header>
                     <materialDesign:PackIcon Kind="FileOutline"
                                              Width="24"
                                              Height="24" />
                 </TabItem.Header>
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel MaxWidth="480"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Top"
+                                Margin="0,16,0,0">
+                        <Button Content="Добавить файл"
+                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                HorizontalAlignment="Left"
+                                Margin="0,0,0,16"
+                                Command="{Binding AddFileCommand}" />
+
+                        <TextBlock Text="Нет файлов"
+                                   Margin="0,0,0,8">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock"
+                                       BasedOn="{StaticResource MaterialDesignBody2TextBlock}">
+                                    <Setter Property="Opacity" Value="0.6" />
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Files.Count}"
+                                                     Value="0">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <ItemsControl ItemsSource="{Binding Files}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <materialDesign:PackIcon Grid.Column="0"
+                                                                 Kind="FileOutline"
+                                                                 Width="20"
+                                                                 Height="20"
+                                                                 VerticalAlignment="Center"
+                                                                 Margin="0,0,8,0" />
+
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding FileName}"
+                                                   VerticalAlignment="Center"
+                                                   TextTrimming="CharacterEllipsis" />
+
+                                        <Button Grid.Column="2"
+                                                Style="{StaticResource MaterialDesignIconButton}"
+                                                ToolTip="Удалить"
+                                                Command="{Binding DataContext.DeleteFileCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}">
+                                            <materialDesign:PackIcon Kind="DeleteOutline"
+                                                                     Width="20"
+                                                                     Height="20" />
+                                        </Button>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </ScrollViewer>
             </TabItem>
         </TabControl>
 

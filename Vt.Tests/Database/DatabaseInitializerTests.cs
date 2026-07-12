@@ -19,7 +19,7 @@ public class DatabaseInitializerTests : IDisposable
     [Fact]
     public void Initialize_WhenDatabaseFileMissing_SeedsTasks()
     {
-        var pathProvider = new TestDatabasePathProvider(_tempDirectory);
+        var pathProvider = new TestAppDataPathProvider(_tempDirectory);
         var initializer = new DatabaseInitializer(pathProvider);
 
         initializer.Run();
@@ -34,7 +34,7 @@ public class DatabaseInitializerTests : IDisposable
     [Fact]
     public void Initialize_WhenDatabaseFileExists_DoesNotSeedAgain()
     {
-        var pathProvider = new TestDatabasePathProvider(_tempDirectory);
+        var pathProvider = new TestAppDataPathProvider(_tempDirectory);
         var initializer = new DatabaseInitializer(pathProvider);
 
         initializer.Run();
@@ -58,7 +58,7 @@ public class DatabaseInitializerTests : IDisposable
     [Fact]
     public async Task Initialize_CreatesSchema()
     {
-        var pathProvider = new TestDatabasePathProvider(_tempDirectory);
+        var pathProvider = new TestAppDataPathProvider(_tempDirectory);
         var initializer = new DatabaseInitializer(pathProvider);
 
         initializer.Run();
@@ -87,8 +87,16 @@ public class DatabaseInitializerTests : IDisposable
             Directory.Delete(_tempDirectory, recursive: true);
     }
 
-    private sealed class TestDatabasePathProvider(string directory) : IDatabasePathProvider
+    private sealed class TestAppDataPathProvider(string directory) : IAppDataPathProvider
     {
+        public string GetAppDataDirectory() => directory;
+
         public string GetDatabaseFilePath() => Path.Combine(directory, "vt2.db");
+
+        public string GetTaskFilesDirectory(int taskId) =>
+            Path.Combine(directory, "TasksFiles", $"Task_{taskId}");
+
+        public string GetTaskFileStoredPath(int taskId, string fileName) =>
+            $"TasksFiles/Task_{taskId}/{fileName}";
     }
 }

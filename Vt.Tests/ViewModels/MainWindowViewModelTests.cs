@@ -1,5 +1,6 @@
 using Database.Models;
 using Database.Repositories;
+using VtApp.Services;
 using VtApp.ViewModels;
 using Xunit;
 
@@ -67,7 +68,12 @@ public class MainWindowViewModelTests
     private static TasksViewModel CreateTasksViewModel()
     {
         var repository = new EmptyTaskRepository();
-        return new TasksViewModel(repository, new TaskEditViewModel(repository, new EmptySubtaskRepository()));
+        return new TasksViewModel(
+            repository,
+            new TaskEditViewModel(
+                repository,
+                new EmptySubtaskRepository(),
+                new EmptyTaskFileService()));
     }
 
     private sealed class EmptyTaskRepository : ITaskRepository
@@ -82,6 +88,18 @@ public class MainWindowViewModelTests
             Task.FromResult(task);
 
         public Task UpdateAsync(TaskDb task, CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
+    }
+
+    private sealed class EmptyTaskFileService : ITaskFileService
+    {
+        public Task<IReadOnlyList<VtApp.Models.TaskFileItem>> GetFilesAsync(int taskId, CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<VtApp.Models.TaskFileItem>>([]);
+
+        public Task<VtApp.Models.TaskFileItem> AddFileAsync(int taskId, string sourceFilePath, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task DeleteFileAsync(int fileId, CancellationToken cancellationToken = default) =>
             Task.CompletedTask;
     }
 

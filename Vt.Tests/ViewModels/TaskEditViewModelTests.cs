@@ -1,6 +1,7 @@
 using Database.Models;
 using Database.Repositories;
 using VtApp.Models;
+using VtApp.Services;
 using VtApp.ViewModels;
 using Xunit;
 
@@ -197,6 +198,63 @@ public class TaskEditViewModelTests
     }
 
     [Fact]
+    public void PrepareForCreate_DisablesFileManagement()
+    {
+        var viewModel = CreateViewModel(new FakeTaskRepository([]));
+        viewModel.PrepareForCreate();
+
+        Assert.False(viewModel.CanManageFiles);
+        Assert.False(viewModel.AddFileCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public async Task PrepareForEditAsync_LoadsFiles()
+    {
+        var task = new TaskDb
+        {
+            Id = 2,
+            Title = "Задача",
+            DueDateUtc = new DateTime(2026, 4, 1),
+            ProgressPercent = 0,
+            Priority = TaskPriority.Medium,
+        };
+        var fileService = new FakeTaskFileService(
+        [
+            new TaskFileItem { Id = 1, FileName = "report.pdf" },
+        ]);
+        var viewModel = CreateViewModel(new FakeTaskRepository([task]), fileService: fileService);
+
+        await viewModel.PrepareForEditAsync(2);
+
+        Assert.True(viewModel.CanManageFiles);
+        var file = Assert.Single(viewModel.Files);
+        Assert.Equal("report.pdf", file.FileName);
+    }
+
+    [Fact]
+    public async Task DeleteFileCommand_RemovesFileFromCollection()
+    {
+        var task = new TaskDb
+        {
+            Id = 4,
+            Title = "Задача",
+            DueDateUtc = new DateTime(2026, 4, 1),
+            ProgressPercent = 0,
+            Priority = TaskPriority.Medium,
+        };
+        var file = new TaskFileItem { Id = 9, FileName = "notes.txt" };
+        var fileService = new FakeTaskFileService([file]);
+        var viewModel = CreateViewModel(new FakeTaskRepository([task]), fileService: fileService);
+
+        await viewModel.PrepareForEditAsync(4);
+        await viewModel.DeleteFileCommand.ExecuteAsync(file);
+
+        Assert.Empty(viewModel.Files);
+        Assert.Single(fileService.DeletedFileIds);
+        Assert.Equal(9, fileService.DeletedFileIds[0]);
+    }
+
+    [Fact]
     public void PrepareForCreate_ClearsSubtasks()
     {
         var viewModel = CreateViewModel(new FakeTaskRepository([]));
@@ -212,10 +270,14 @@ public class TaskEditViewModelTests
     private static TaskEditViewModel CreateViewModel(
         FakeTaskRepository repository,
         FakeSubtaskRepository? subtaskRepository = null,
+        FakeTaskFileService? fileService = null,
         Action? onSaved = null,
         Action? onCancelled = null)
     {
-        var viewModel = new TaskEditViewModel(repository, subtaskRepository ?? new FakeSubtaskRepository([]));
+        var viewModel = new TaskEditViewModel(
+            repository,
+            subtaskRepository ?? new FakeSubtaskRepository([]),
+            fileService ?? new FakeTaskFileService([]));
         viewModel.Configure(
             onSaved ?? (() => { }),
             onCancelled ?? (() => { }));
@@ -266,6 +328,23 @@ public class TaskEditViewModelTests
         public Task UpdateAsync(SubtaskDb subtask, CancellationToken cancellationToken = default)
         {
             UpdatedSubtasks.Add(subtask);
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class FakeTaskFileService(IReadOnlyList<TaskFileItem> files) : ITaskFileService
+    {
+        public List<int> DeletedFileIds { get; } = [];
+
+        public Task<IReadOnlyList<TaskFileItem>> GetFilesAsync(int taskId, CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<TaskFileItem>>(files.ToList());
+
+        public Task<TaskFileItem> AddFileAsync(int taskId, string sourceFilePath, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task DeleteFileAsync(int fileId, CancellationToken cancellationToken = default)
+        {
+            DeletedFileIds.Add(fileId);
             return Task.CompletedTask;
         }
     }
