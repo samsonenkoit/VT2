@@ -37,11 +37,13 @@ public class TaskEditViewModelTests
 
         viewModel.PrepareForCreate();
         viewModel.Title = "  Новая задача  ";
+        viewModel.Description = "  Комментарий  ";
         await viewModel.SaveCommand.ExecuteAsync(null);
 
         Assert.True(saved);
         var added = Assert.Single(repository.AddedTasks);
         Assert.Equal("Новая задача", added.Title);
+        Assert.Equal("Комментарий", added.Description);
         Assert.Equal(TaskImportance.Medium, added.Importance);
         Assert.Equal(TaskDelayRisk.Low, added.DelayRisk);
         Assert.Equal(TaskDifficulty.Low, added.Difficulty);
@@ -92,6 +94,7 @@ public class TaskEditViewModelTests
         {
             Id = 7,
             Title = "Старое",
+            Description = "Старое описание",
             DueDateUtc = new DateTime(2026, 4, 1),
             ProgressPercent = 10,
             Importance = TaskImportance.Medium,
@@ -106,12 +109,14 @@ public class TaskEditViewModelTests
 
         await viewModel.PrepareForEditAsync(7);
         viewModel.Title = "Новое";
+        viewModel.Description = "Новое описание";
         viewModel.Importance = TaskImportance.High;
         viewModel.Urgency = TaskUrgency.High;
         await viewModel.SaveCommand.ExecuteAsync(null);
 
         Assert.True(saved);
         Assert.Equal("Новое", existing.Title);
+        Assert.Equal("Новое описание", existing.Description);
         Assert.Equal(10, existing.ProgressPercent);
         Assert.Equal(TaskImportance.High, existing.Importance);
         Assert.Equal(TaskUrgency.High, existing.Urgency);
@@ -158,6 +163,8 @@ public class TaskEditViewModelTests
         Assert.Equal(TaskDifficulty.High, viewModel.Difficulty);
         Assert.Equal(TaskUrgency.Low, viewModel.Urgency);
         Assert.Equal(TaskPriority.Urgent, viewModel.Priority);
+        Assert.Equal(0, viewModel.ProgressPercent);
+        Assert.Equal("Выполнено (0%):", viewModel.ProgressLabel);
     }
 
     [Fact]

@@ -59,6 +59,9 @@ public partial class TaskEditViewModel : ObservableObject
     private string _title = string.Empty;
 
     [ObservableProperty]
+    private string _description = string.Empty;
+
+    [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(AddSubtaskCommand))]
     private string _newSubtaskTitle = string.Empty;
 
@@ -80,7 +83,13 @@ public partial class TaskEditViewModel : ObservableObject
     [ObservableProperty]
     private TaskPriority _priority = TaskPriority.Medium;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ProgressLabel))]
+    private int _progressPercent;
+
     public string PriorityDisplay => TaskFactorDisplay.Priority(Priority);
+
+    public string ProgressLabel => $"Выполнено ({ProgressPercent}%):";
 
     public string PageTitle => IsEditMode ? "Редактирование задачи" : "Новая задача";
 
@@ -105,10 +114,12 @@ public partial class TaskEditViewModel : ObservableObject
         _taskId = null;
         IsEditMode = false;
         Title = string.Empty;
+        Description = string.Empty;
         Importance = TaskImportance.Medium;
         DelayRisk = TaskDelayRisk.Low;
         Difficulty = TaskDifficulty.Low;
         Urgency = TaskUrgency.Medium;
+        ProgressPercent = 0;
         RecalculatePriority();
         Subtasks.Clear();
         NewSubtaskTitle = string.Empty;
@@ -125,10 +136,12 @@ public partial class TaskEditViewModel : ObservableObject
         _taskId = taskId;
         IsEditMode = true;
         Title = task.Title;
+        Description = task.Description;
         Importance = task.Importance;
         DelayRisk = task.DelayRisk;
         Difficulty = task.Difficulty;
         Urgency = task.Urgency;
+        ProgressPercent = task.ProgressPercent;
         RecalculatePriority();
 
         var subtasks = await _subtaskRepository.GetNotDeletedAsync(taskId);
@@ -164,6 +177,13 @@ public partial class TaskEditViewModel : ObservableObject
     partial void OnUrgencyChanged(TaskUrgency value) => RecalculatePriority();
 
     partial void OnPriorityChanged(TaskPriority value) => OnPropertyChanged(nameof(PriorityDisplay));
+
+    partial void OnProgressPercentChanged(int value)
+    {
+        var clamped = Math.Clamp(value, 0, 100);
+        if (clamped != value)
+            ProgressPercent = clamped;
+    }
 
     private void RecalculatePriority() =>
         Priority = PriorityCalculator.Calculate(Importance, DelayRisk, Difficulty, Urgency);
@@ -213,8 +233,9 @@ public partial class TaskEditViewModel : ObservableObject
             var task = await _taskRepository.AddAsync(new TaskDb
             {
                 Title = trimmedTitle,
+                Description = Description.Trim(),
                 DueDateUtc = DateTime.Today,
-                ProgressPercent = 0,
+                ProgressPercent = ProgressPercent,
                 Importance = Importance,
                 DelayRisk = DelayRisk,
                 Difficulty = Difficulty,
@@ -231,11 +252,13 @@ public partial class TaskEditViewModel : ObservableObject
                 return;
 
             task.Title = trimmedTitle;
+            task.Description = Description.Trim();
             task.Importance = Importance;
             task.DelayRisk = DelayRisk;
             task.Difficulty = Difficulty;
             task.Urgency = Urgency;
             task.Priority = Priority;
+            task.ProgressPercent = ProgressPercent;
             await _taskRepository.UpdateAsync(task);
             await SaveSubtasksAsync(task.Id);
         }
