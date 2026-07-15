@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Database.Models;
 using Database.Repositories;
+using Database.Services;
 using Microsoft.Win32;
 using VtApp.Models;
 using VtApp.Services;
@@ -22,6 +23,35 @@ public partial class TaskEditViewModel : ObservableObject
 
     public ObservableCollection<TaskFileItem> Files { get; } = [];
 
+    public IReadOnlyList<EnumOption<TaskImportance>> ImportanceOptions { get; } =
+    [
+        new() { Value = TaskImportance.Low, Display = TaskFactorDisplay.Importance(TaskImportance.Low) },
+        new() { Value = TaskImportance.Medium, Display = TaskFactorDisplay.Importance(TaskImportance.Medium) },
+        new() { Value = TaskImportance.High, Display = TaskFactorDisplay.Importance(TaskImportance.High) },
+        new() { Value = TaskImportance.Critical, Display = TaskFactorDisplay.Importance(TaskImportance.Critical) },
+    ];
+
+    public IReadOnlyList<EnumOption<TaskDelayRisk>> DelayRiskOptions { get; } =
+    [
+        new() { Value = TaskDelayRisk.Low, Display = TaskFactorDisplay.DelayRisk(TaskDelayRisk.Low) },
+        new() { Value = TaskDelayRisk.Medium, Display = TaskFactorDisplay.DelayRisk(TaskDelayRisk.Medium) },
+        new() { Value = TaskDelayRisk.High, Display = TaskFactorDisplay.DelayRisk(TaskDelayRisk.High) },
+    ];
+
+    public IReadOnlyList<EnumOption<TaskDifficulty>> DifficultyOptions { get; } =
+    [
+        new() { Value = TaskDifficulty.Low, Display = TaskFactorDisplay.Difficulty(TaskDifficulty.Low) },
+        new() { Value = TaskDifficulty.Medium, Display = TaskFactorDisplay.Difficulty(TaskDifficulty.Medium) },
+        new() { Value = TaskDifficulty.High, Display = TaskFactorDisplay.Difficulty(TaskDifficulty.High) },
+    ];
+
+    public IReadOnlyList<EnumOption<TaskUrgency>> UrgencyOptions { get; } =
+    [
+        new() { Value = TaskUrgency.Low, Display = TaskFactorDisplay.Urgency(TaskUrgency.Low) },
+        new() { Value = TaskUrgency.Medium, Display = TaskFactorDisplay.Urgency(TaskUrgency.Medium) },
+        new() { Value = TaskUrgency.High, Display = TaskFactorDisplay.Urgency(TaskUrgency.High) },
+    ];
+
     public bool CanManageFiles => _taskId is not null;
 
     [ObservableProperty]
@@ -34,6 +64,23 @@ public partial class TaskEditViewModel : ObservableObject
 
     [ObservableProperty]
     private bool _isEditMode;
+
+    [ObservableProperty]
+    private TaskImportance _importance = TaskImportance.Medium;
+
+    [ObservableProperty]
+    private TaskDelayRisk _delayRisk = TaskDelayRisk.Low;
+
+    [ObservableProperty]
+    private TaskDifficulty _difficulty = TaskDifficulty.Low;
+
+    [ObservableProperty]
+    private TaskUrgency _urgency = TaskUrgency.Medium;
+
+    [ObservableProperty]
+    private TaskPriority _priority = TaskPriority.Medium;
+
+    public string PriorityDisplay => TaskFactorDisplay.Priority(Priority);
 
     public string PageTitle => IsEditMode ? "Редактирование задачи" : "Новая задача";
 
@@ -58,6 +105,11 @@ public partial class TaskEditViewModel : ObservableObject
         _taskId = null;
         IsEditMode = false;
         Title = string.Empty;
+        Importance = TaskImportance.Medium;
+        DelayRisk = TaskDelayRisk.Low;
+        Difficulty = TaskDifficulty.Low;
+        Urgency = TaskUrgency.Medium;
+        RecalculatePriority();
         Subtasks.Clear();
         NewSubtaskTitle = string.Empty;
         Files.Clear();
@@ -73,6 +125,11 @@ public partial class TaskEditViewModel : ObservableObject
         _taskId = taskId;
         IsEditMode = true;
         Title = task.Title;
+        Importance = task.Importance;
+        DelayRisk = task.DelayRisk;
+        Difficulty = task.Difficulty;
+        Urgency = task.Urgency;
+        RecalculatePriority();
 
         var subtasks = await _subtaskRepository.GetNotDeletedAsync(taskId);
         Subtasks.Clear();
@@ -97,6 +154,19 @@ public partial class TaskEditViewModel : ObservableObject
     }
 
     partial void OnIsEditModeChanged(bool value) => OnPropertyChanged(nameof(PageTitle));
+
+    partial void OnImportanceChanged(TaskImportance value) => RecalculatePriority();
+
+    partial void OnDelayRiskChanged(TaskDelayRisk value) => RecalculatePriority();
+
+    partial void OnDifficultyChanged(TaskDifficulty value) => RecalculatePriority();
+
+    partial void OnUrgencyChanged(TaskUrgency value) => RecalculatePriority();
+
+    partial void OnPriorityChanged(TaskPriority value) => OnPropertyChanged(nameof(PriorityDisplay));
+
+    private void RecalculatePriority() =>
+        Priority = PriorityCalculator.Calculate(Importance, DelayRisk, Difficulty, Urgency);
 
     private bool CanSave() => !string.IsNullOrWhiteSpace(Title);
 
@@ -136,6 +206,7 @@ public partial class TaskEditViewModel : ObservableObject
     private async Task SaveAsync()
     {
         var trimmedTitle = Title.Trim();
+        RecalculatePriority();
 
         if (_taskId is null)
         {
@@ -144,7 +215,11 @@ public partial class TaskEditViewModel : ObservableObject
                 Title = trimmedTitle,
                 DueDateUtc = DateTime.Today,
                 ProgressPercent = 0,
-                Priority = TaskPriority.Medium,
+                Importance = Importance,
+                DelayRisk = DelayRisk,
+                Difficulty = Difficulty,
+                Urgency = Urgency,
+                Priority = Priority,
             });
 
             await SaveSubtasksAsync(task.Id);
@@ -156,6 +231,11 @@ public partial class TaskEditViewModel : ObservableObject
                 return;
 
             task.Title = trimmedTitle;
+            task.Importance = Importance;
+            task.DelayRisk = DelayRisk;
+            task.Difficulty = Difficulty;
+            task.Urgency = Urgency;
+            task.Priority = Priority;
             await _taskRepository.UpdateAsync(task);
             await SaveSubtasksAsync(task.Id);
         }

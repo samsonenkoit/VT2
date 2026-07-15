@@ -18,6 +18,10 @@ public class VtDbContext(DbContextOptions<VtDbContext> options) : DbContext(opti
             entity.HasKey(t => t.Id);
             entity.Property(t => t.Title).IsRequired().HasMaxLength(500);
             entity.Property(t => t.Priority).HasConversion<int>();
+            entity.Property(t => t.Importance).HasConversion<int>();
+            entity.Property(t => t.DelayRisk).HasConversion<int>();
+            entity.Property(t => t.Difficulty).HasConversion<int>();
+            entity.Property(t => t.Urgency).HasConversion<int>();
 
             entity.HasMany(t => t.Subtasks)
                 .WithOne(s => s.Task)

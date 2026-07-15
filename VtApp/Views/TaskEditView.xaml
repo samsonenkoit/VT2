@@ -37,6 +37,44 @@
                         <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  materialDesign:HintAssist.Hint="Название"
+                                 Margin="0,0,0,16" />
+
+                        <ComboBox ItemsSource="{Binding ImportanceOptions}"
+                                  SelectedValue="{Binding Importance, UpdateSourceTrigger=PropertyChanged}"
+                                  SelectedValuePath="Value"
+                                  DisplayMemberPath="Display"
+                                  Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                                  materialDesign:HintAssist.Hint="Важность"
+                                  Margin="0,0,0,16" />
+
+                        <ComboBox ItemsSource="{Binding DelayRiskOptions}"
+                                  SelectedValue="{Binding DelayRisk, UpdateSourceTrigger=PropertyChanged}"
+                                  SelectedValuePath="Value"
+                                  DisplayMemberPath="Display"
+                                  Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                                  materialDesign:HintAssist.Hint="Риск срыва сроков"
+                                  Margin="0,0,0,16" />
+
+                        <ComboBox ItemsSource="{Binding DifficultyOptions}"
+                                  SelectedValue="{Binding Difficulty, UpdateSourceTrigger=PropertyChanged}"
+                                  SelectedValuePath="Value"
+                                  DisplayMemberPath="Display"
+                                  Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                                  materialDesign:HintAssist.Hint="Сложность"
+                                  Margin="0,0,0,16" />
+
+                        <ComboBox ItemsSource="{Binding UrgencyOptions}"
+                                  SelectedValue="{Binding Urgency, UpdateSourceTrigger=PropertyChanged}"
+                                  SelectedValuePath="Value"
+                                  DisplayMemberPath="Display"
+                                  Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                                  materialDesign:HintAssist.Hint="Срочность"
+                                  Margin="0,0,0,16" />
+
+                        <TextBox Text="{Binding PriorityDisplay, Mode=OneWay}"
+                                 IsReadOnly="True"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                 materialDesign:HintAssist.Hint="Приоритет"
                                  Margin="0,0,0,24" />
 
                         <TextBlock Text="Подзадачи"

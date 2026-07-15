@@ -42,9 +42,47 @@ public class TaskEditViewModelTests
         Assert.True(saved);
         var added = Assert.Single(repository.AddedTasks);
         Assert.Equal("Новая задача", added.Title);
+        Assert.Equal(TaskImportance.Medium, added.Importance);
+        Assert.Equal(TaskDelayRisk.Low, added.DelayRisk);
+        Assert.Equal(TaskDifficulty.Low, added.Difficulty);
+        Assert.Equal(TaskUrgency.Medium, added.Urgency);
         Assert.Equal(TaskPriority.Medium, added.Priority);
         Assert.Equal(0, added.ProgressPercent);
         Assert.Equal(DateTime.Today, added.DueDateUtc.Date);
+    }
+
+    [Fact]
+    public async Task SaveAsync_Create_PersistsComputedPriorityFromFactors()
+    {
+        var repository = new FakeTaskRepository([]);
+        var viewModel = CreateViewModel(repository);
+
+        viewModel.PrepareForCreate();
+        viewModel.Title = "Срочная";
+        viewModel.Importance = TaskImportance.High;
+        viewModel.Urgency = TaskUrgency.High;
+        viewModel.DelayRisk = TaskDelayRisk.Low;
+        viewModel.Difficulty = TaskDifficulty.Low;
+        await viewModel.SaveCommand.ExecuteAsync(null);
+
+        var added = Assert.Single(repository.AddedTasks);
+        Assert.Equal(TaskPriority.Critical, added.Priority);
+        Assert.Equal(TaskPriority.Critical, viewModel.Priority);
+    }
+
+    [Fact]
+    public void ChangingFactors_RecalculatesPriority()
+    {
+        var viewModel = CreateViewModel(new FakeTaskRepository([]));
+        viewModel.PrepareForCreate();
+
+        viewModel.Importance = TaskImportance.Critical;
+        viewModel.Urgency = TaskUrgency.High;
+        viewModel.DelayRisk = TaskDelayRisk.High;
+        viewModel.Difficulty = TaskDifficulty.High;
+
+        Assert.Equal(TaskPriority.Critical, viewModel.Priority);
+        Assert.Equal("Критический", viewModel.PriorityDisplay);
     }
 
     [Fact]
@@ -56,6 +94,10 @@ public class TaskEditViewModelTests
             Title = "Старое",
             DueDateUtc = new DateTime(2026, 4, 1),
             ProgressPercent = 10,
+            Importance = TaskImportance.Medium,
+            DelayRisk = TaskDelayRisk.Low,
+            Difficulty = TaskDifficulty.Low,
+            Urgency = TaskUrgency.High,
             Priority = TaskPriority.Urgent,
         };
         var repository = new FakeTaskRepository([existing]);
@@ -64,11 +106,16 @@ public class TaskEditViewModelTests
 
         await viewModel.PrepareForEditAsync(7);
         viewModel.Title = "Новое";
+        viewModel.Importance = TaskImportance.High;
+        viewModel.Urgency = TaskUrgency.High;
         await viewModel.SaveCommand.ExecuteAsync(null);
 
         Assert.True(saved);
         Assert.Equal("Новое", existing.Title);
         Assert.Equal(10, existing.ProgressPercent);
+        Assert.Equal(TaskImportance.High, existing.Importance);
+        Assert.Equal(TaskUrgency.High, existing.Urgency);
+        Assert.Equal(TaskPriority.Critical, existing.Priority);
         Assert.Single(repository.UpdatedTasks);
     }
 
@@ -92,7 +139,11 @@ public class TaskEditViewModelTests
             Title = "Редактируемая",
             DueDateUtc = new DateTime(2026, 4, 1),
             ProgressPercent = 0,
-            Priority = TaskPriority.Medium,
+            Importance = TaskImportance.High,
+            DelayRisk = TaskDelayRisk.Medium,
+            Difficulty = TaskDifficulty.High,
+            Urgency = TaskUrgency.Low,
+            Priority = TaskPriority.Urgent,
         };
         var viewModel = CreateViewModel(new FakeTaskRepository([existing]));
 
@@ -102,6 +153,11 @@ public class TaskEditViewModelTests
         Assert.True(viewModel.IsEditMode);
         Assert.Equal("Редактируемая", viewModel.Title);
         Assert.Equal("Редактирование задачи", viewModel.PageTitle);
+        Assert.Equal(TaskImportance.High, viewModel.Importance);
+        Assert.Equal(TaskDelayRisk.Medium, viewModel.DelayRisk);
+        Assert.Equal(TaskDifficulty.High, viewModel.Difficulty);
+        Assert.Equal(TaskUrgency.Low, viewModel.Urgency);
+        Assert.Equal(TaskPriority.Urgent, viewModel.Priority);
     }
 
     [Fact]

@@ -1,4 +1,5 @@
 using Database.Models;
+using Database.Services;
 
 namespace Database.Seed;
 
@@ -8,126 +9,141 @@ public static class TaskSeedData
     {
         var tasks = new List<TaskDb>
         {
-            new()
-            {
-                Id = 1,
-                Title = "Согласовать срочный договор с поставщиком",
-                DueDateUtc = new DateTime(2026, 3, 18),
-                ProgressPercent = 15,
-                Priority = TaskPriority.Critical,
-            },
-            new()
-            {
-                Id = 2,
-                Title = "Устранить критическую ошибку в отчёте",
-                DueDateUtc = new DateTime(2026, 3, 20),
-                ProgressPercent = 40,
-                Priority = TaskPriority.Critical,
-            },
-            new()
-            {
-                Id = 3,
-                Title = "Подготовить ответ регулятору",
-                DueDateUtc = new DateTime(2026, 3, 22),
-                ProgressPercent = 5,
-                Priority = TaskPriority.Critical,
-            },
-            new()
-            {
-                Id = 4,
-                Title = "Создать первую задачу в новом проекте",
-                DueDateUtc = new DateTime(2026, 3, 25),
-                ProgressPercent = 30,
-                Priority = TaskPriority.Urgent,
-            },
-            new()
-            {
-                Id = 5,
-                Title = "Согласовать бюджет на второй квартал",
-                DueDateUtc = new DateTime(2026, 3, 28),
-                ProgressPercent = 55,
-                Priority = TaskPriority.Urgent,
-            },
-            new()
-            {
-                Id = 6,
-                Title = "Обновить презентацию для совещания",
-                DueDateUtc = new DateTime(2026, 4, 1),
-                ProgressPercent = 70,
-                Priority = TaskPriority.Urgent,
-            },
-            new()
-            {
-                Id = 7,
-                Title = "Проверить входящие заявки от клиентов",
-                DueDateUtc = new DateTime(2026, 4, 3),
-                ProgressPercent = 20,
-                Priority = TaskPriority.Urgent,
-            },
-            new()
-            {
-                Id = 8,
-                Title = "Разобрать архив переписки за месяц",
-                DueDateUtc = new DateTime(2026, 4, 10),
-                ProgressPercent = 45,
-                Priority = TaskPriority.Medium,
-            },
-            new()
-            {
-                Id = 9,
-                Title = "Актуализировать список контактов",
-                DueDateUtc = new DateTime(2026, 4, 12),
-                ProgressPercent = 60,
-                Priority = TaskPriority.Medium,
-            },
-            new()
-            {
-                Id = 10,
-                Title = "Подготовить шаблоны ответов для поддержки",
-                DueDateUtc = new DateTime(2026, 4, 15),
-                ProgressPercent = 35,
-                Priority = TaskPriority.Medium,
-            },
-            new()
-            {
-                Id = 11,
-                Title = "Изучить новые возможности Material Design",
-                DueDateUtc = new DateTime(2026, 5, 5),
-                ProgressPercent = 10,
-                Priority = TaskPriority.NotUrgent,
-            },
-            new()
-            {
-                Id = 12,
-                Title = "Навести порядок в папках проекта",
-                DueDateUtc = new DateTime(2026, 5, 12),
-                ProgressPercent = 0,
-                Priority = TaskPriority.NotUrgent,
-            },
-            new()
-            {
-                Id = 13,
-                Title = "Составить план обучения команды",
-                DueDateUtc = new DateTime(2026, 5, 20),
-                ProgressPercent = 25,
-                Priority = TaskPriority.NotUrgent,
-            },
-            new()
-            {
-                Id = 14,
-                Title = "Обновить документацию по процессам",
-                DueDateUtc = new DateTime(2026, 6, 1),
-                ProgressPercent = 80,
-                Priority = TaskPriority.NotUrgent,
-            },
-            new()
-            {
-                Id = 15,
-                Title = "Провести ретроспективу квартала",
-                DueDateUtc = new DateTime(2026, 6, 15),
-                ProgressPercent = 50,
-                Priority = TaskPriority.NotUrgent,
-            },
+            CreateTask(
+                1,
+                "Согласовать срочный договор с поставщиком",
+                new DateTime(2026, 3, 18),
+                15,
+                TaskImportance.High,
+                TaskDelayRisk.Low,
+                TaskDifficulty.Low,
+                TaskUrgency.High),
+            CreateTask(
+                2,
+                "Устранить критическую ошибку в отчёте",
+                new DateTime(2026, 3, 20),
+                40,
+                TaskImportance.Critical,
+                TaskDelayRisk.Medium,
+                TaskDifficulty.Medium,
+                TaskUrgency.Medium),
+            CreateTask(
+                3,
+                "Подготовить ответ регулятору",
+                new DateTime(2026, 3, 22),
+                5,
+                TaskImportance.Critical,
+                TaskDelayRisk.Low,
+                TaskDifficulty.Low,
+                TaskUrgency.High),
+            CreateTask(
+                4,
+                "Создать первую задачу в новом проекте",
+                new DateTime(2026, 3, 25),
+                30,
+                TaskImportance.Medium,
+                TaskDelayRisk.Low,
+                TaskDifficulty.Low,
+                TaskUrgency.High),
+            CreateTask(
+                5,
+                "Согласовать бюджет на второй квартал",
+                new DateTime(2026, 3, 28),
+                55,
+                TaskImportance.High,
+                TaskDelayRisk.Low,
+                TaskDifficulty.Low,
+                TaskUrgency.Medium),
+            CreateTask(
+                6,
+                "Обновить презентацию для совещания",
+                new DateTime(2026, 4, 1),
+                70,
+                TaskImportance.High,
+                TaskDelayRisk.Medium,
+                TaskDifficulty.Low,
+                TaskUrgency.Medium),
+            CreateTask(
+                7,
+                "Проверить входящие заявки от клиентов",
+                new DateTime(2026, 4, 3),
+                20,
+                TaskImportance.Critical,
+                TaskDelayRisk.Low,
+                TaskDifficulty.Low,
+                TaskUrgency.Low),
+            CreateTask(
+                8,
+                "Разобрать архив переписки за месяц",
+                new DateTime(2026, 4, 10),
+                45,
+                TaskImportance.Medium,
+                TaskDelayRisk.Low,
+                TaskDifficulty.Low,
+                TaskUrgency.Medium),
+            CreateTask(
+                9,
+                "Актуализировать список контактов",
+                new DateTime(2026, 4, 12),
+                60,
+                TaskImportance.High,
+                TaskDelayRisk.Low,
+                TaskDifficulty.Low,
+                TaskUrgency.Low),
+            CreateTask(
+                10,
+                "Подготовить шаблоны ответов для поддержки",
+                new DateTime(2026, 4, 15),
+                35,
+                TaskImportance.Low,
+                TaskDelayRisk.Low,
+                TaskDifficulty.Low,
+                TaskUrgency.High),
+            CreateTask(
+                11,
+                "Изучить новые возможности Material Design",
+                new DateTime(2026, 5, 5),
+                10,
+                TaskImportance.Low,
+                TaskDelayRisk.Low,
+                TaskDifficulty.Low,
+                TaskUrgency.Low),
+            CreateTask(
+                12,
+                "Навести порядок в папках проекта",
+                new DateTime(2026, 5, 12),
+                0,
+                TaskImportance.Low,
+                TaskDelayRisk.Low,
+                TaskDifficulty.Medium,
+                TaskUrgency.Medium),
+            CreateTask(
+                13,
+                "Составить план обучения команды",
+                new DateTime(2026, 5, 20),
+                25,
+                TaskImportance.Medium,
+                TaskDelayRisk.Low,
+                TaskDifficulty.Low,
+                TaskUrgency.Low),
+            CreateTask(
+                14,
+                "Обновить документацию по процессам",
+                new DateTime(2026, 6, 1),
+                80,
+                TaskImportance.Low,
+                TaskDelayRisk.Medium,
+                TaskDifficulty.Low,
+                TaskUrgency.Low),
+            CreateTask(
+                15,
+                "Провести ретроспективу квартала",
+                new DateTime(2026, 6, 15),
+                50,
+                TaskImportance.Medium,
+                TaskDelayRisk.Medium,
+                TaskDifficulty.Low,
+                TaskUrgency.Low),
         };
 
         var subtasks = new List<SubtaskDb>
@@ -141,4 +157,26 @@ public static class TaskSeedData
 
         return (tasks, subtasks);
     }
+
+    private static TaskDb CreateTask(
+        int id,
+        string title,
+        DateTime dueDateUtc,
+        int progressPercent,
+        TaskImportance importance,
+        TaskDelayRisk delayRisk,
+        TaskDifficulty difficulty,
+        TaskUrgency urgency) =>
+        new()
+        {
+            Id = id,
+            Title = title,
+            DueDateUtc = dueDateUtc,
+            ProgressPercent = progressPercent,
+            Importance = importance,
+            DelayRisk = delayRisk,
+            Difficulty = difficulty,
+            Urgency = urgency,
+            Priority = PriorityCalculator.Calculate(importance, delayRisk, difficulty, urgency),
+        };
 }
