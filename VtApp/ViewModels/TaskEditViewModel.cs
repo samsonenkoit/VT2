@@ -62,6 +62,9 @@ public partial class TaskEditViewModel : ObservableObject
     private string _description = string.Empty;
 
     [ObservableProperty]
+    private DateTime _dueDate = DateTime.Today.AddDays(3);
+
+    [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(AddSubtaskCommand))]
     private string _newSubtaskTitle = string.Empty;
 
@@ -115,6 +118,7 @@ public partial class TaskEditViewModel : ObservableObject
         IsEditMode = false;
         Title = string.Empty;
         Description = string.Empty;
+        DueDate = DateTime.Today.AddDays(3);
         Importance = TaskImportance.Medium;
         DelayRisk = TaskDelayRisk.Low;
         Difficulty = TaskDifficulty.Low;
@@ -137,6 +141,7 @@ public partial class TaskEditViewModel : ObservableObject
         IsEditMode = true;
         Title = task.Title;
         Description = task.Description;
+        DueDate = ToDueDateLocal(task.DueDateUtc);
         Importance = task.Importance;
         DelayRisk = task.DelayRisk;
         Difficulty = task.Difficulty;
@@ -177,6 +182,13 @@ public partial class TaskEditViewModel : ObservableObject
     partial void OnUrgencyChanged(TaskUrgency value) => RecalculatePriority();
 
     partial void OnPriorityChanged(TaskPriority value) => OnPropertyChanged(nameof(PriorityDisplay));
+
+    partial void OnDueDateChanged(DateTime value)
+    {
+        var date = value.Date;
+        if (date != value)
+            DueDate = date;
+    }
 
     partial void OnProgressPercentChanged(int value)
     {
@@ -227,6 +239,7 @@ public partial class TaskEditViewModel : ObservableObject
     {
         var trimmedTitle = Title.Trim();
         RecalculatePriority();
+        var dueDateUtc = ToDueDateUtc(DueDate);
 
         if (_taskId is null)
         {
@@ -234,7 +247,7 @@ public partial class TaskEditViewModel : ObservableObject
             {
                 Title = trimmedTitle,
                 Description = Description.Trim(),
-                DueDateUtc = DateTime.Today,
+                DueDateUtc = dueDateUtc,
                 ProgressPercent = ProgressPercent,
                 Importance = Importance,
                 DelayRisk = DelayRisk,
@@ -253,6 +266,7 @@ public partial class TaskEditViewModel : ObservableObject
 
             task.Title = trimmedTitle;
             task.Description = Description.Trim();
+            task.DueDateUtc = dueDateUtc;
             task.Importance = Importance;
             task.DelayRisk = DelayRisk;
             task.Difficulty = Difficulty;
@@ -314,5 +328,19 @@ public partial class TaskEditViewModel : ObservableObject
         OnPropertyChanged(nameof(CanManageFiles));
         AddFileCommand.NotifyCanExecuteChanged();
         DeleteFileCommand.NotifyCanExecuteChanged();
+    }
+
+    public static DateTime ToDueDateUtc(DateTime localDate)
+    {
+        var endOfLocalDay = DateTime.SpecifyKind(localDate.Date.AddDays(1).AddTicks(-1), DateTimeKind.Local);
+        return endOfLocalDay.ToUniversalTime();
+    }
+
+    public static DateTime ToDueDateLocal(DateTime dueDateUtc)
+    {
+        var utc = dueDateUtc.Kind == DateTimeKind.Utc
+            ? dueDateUtc
+            : DateTime.SpecifyKind(dueDateUtc, DateTimeKind.Utc);
+        return utc.ToLocalTime().Date;
     }
 }

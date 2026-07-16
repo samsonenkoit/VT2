@@ -50,7 +50,69 @@ public class TaskEditViewModelTests
         Assert.Equal(TaskUrgency.Medium, added.Urgency);
         Assert.Equal(TaskPriority.Medium, added.Priority);
         Assert.Equal(0, added.ProgressPercent);
-        Assert.Equal(DateTime.Today, added.DueDateUtc.Date);
+        Assert.Equal(TaskEditViewModel.ToDueDateUtc(DateTime.Today.AddDays(3)), added.DueDateUtc);
+    }
+
+    [Fact]
+    public void PrepareForCreate_SetsDueDateToTodayPlusThreeDays()
+    {
+        var viewModel = CreateViewModel(new FakeTaskRepository([]));
+
+        viewModel.PrepareForCreate();
+
+        Assert.Equal(DateTime.Today.AddDays(3), viewModel.DueDate);
+    }
+
+    [Fact]
+    public async Task PrepareForEditAsync_LoadsDueDateAsLocalDate()
+    {
+        var localDate = new DateTime(2026, 6, 15);
+        var dueDateUtc = TaskEditViewModel.ToDueDateUtc(localDate);
+        var existing = new TaskDb
+        {
+            Id = 3,
+            Title = "Редактируемая",
+            DueDateUtc = dueDateUtc,
+            ProgressPercent = 0,
+            Importance = TaskImportance.High,
+            DelayRisk = TaskDelayRisk.Medium,
+            Difficulty = TaskDifficulty.High,
+            Urgency = TaskUrgency.Low,
+            Priority = TaskPriority.Urgent,
+        };
+        var viewModel = CreateViewModel(new FakeTaskRepository([existing]));
+
+        var prepared = await viewModel.PrepareForEditAsync(3);
+
+        Assert.True(prepared);
+        Assert.Equal(localDate, viewModel.DueDate);
+    }
+
+    [Fact]
+    public async Task SaveAsync_Edit_PersistsDueDateUtcAsEndOfLocalDay()
+    {
+        var existing = new TaskDb
+        {
+            Id = 7,
+            Title = "Старое",
+            Description = "Старое описание",
+            DueDateUtc = TaskEditViewModel.ToDueDateUtc(new DateTime(2026, 4, 1)),
+            ProgressPercent = 10,
+            Importance = TaskImportance.Medium,
+            DelayRisk = TaskDelayRisk.Low,
+            Difficulty = TaskDifficulty.Low,
+            Urgency = TaskUrgency.High,
+            Priority = TaskPriority.Urgent,
+        };
+        var repository = new FakeTaskRepository([existing]);
+        var viewModel = CreateViewModel(repository);
+
+        await viewModel.PrepareForEditAsync(7);
+        var newLocalDate = new DateTime(2026, 5, 20);
+        viewModel.DueDate = newLocalDate;
+        await viewModel.SaveCommand.ExecuteAsync(null);
+
+        Assert.Equal(TaskEditViewModel.ToDueDateUtc(newLocalDate), existing.DueDateUtc);
     }
 
     [Fact]
@@ -95,7 +157,7 @@ public class TaskEditViewModelTests
             Id = 7,
             Title = "Старое",
             Description = "Старое описание",
-            DueDateUtc = new DateTime(2026, 4, 1),
+            DueDateUtc = TaskEditViewModel.ToDueDateUtc(new DateTime(2026, 4, 1)),
             ProgressPercent = 10,
             Importance = TaskImportance.Medium,
             DelayRisk = TaskDelayRisk.Low,
@@ -121,6 +183,7 @@ public class TaskEditViewModelTests
         Assert.Equal(TaskImportance.High, existing.Importance);
         Assert.Equal(TaskUrgency.High, existing.Urgency);
         Assert.Equal(TaskPriority.Critical, existing.Priority);
+        Assert.Equal(TaskEditViewModel.ToDueDateUtc(new DateTime(2026, 4, 1)), existing.DueDateUtc);
         Assert.Single(repository.UpdatedTasks);
     }
 

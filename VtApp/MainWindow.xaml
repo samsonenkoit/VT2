@@ -62,7 +62,7 @@
 
         <materialDesign:Card Grid.Column="1"
                              Margin="0"
-                             Padding="24"
+                             Padding="24, 10, 24, 24"
                              UniformCornerRadius="8">
             <ContentControl Content="{Binding CurrentView}" />
         </materialDesign:Card>

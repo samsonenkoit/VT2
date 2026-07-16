@@ -52,13 +52,20 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
-                        <!-- Left: title -->
-                        <TextBox Grid.Column="0"
-                                 Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                                 materialDesign:HintAssist.Hint="Название"
-                                 VerticalAlignment="Top"
-                                 Margin="0,5,12,0" />
+                        <!-- Left: title + due date -->
+                        <StackPanel Grid.Column="0"
+                                    VerticalAlignment="Top"
+                                    Margin="0,5,12,0">
+                            <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                     materialDesign:HintAssist.Hint="Название"
+                                     Margin="0,0,0,16" />
+
+                            <DatePicker SelectedDate="{Binding DueDate, Mode=TwoWay}"
+                                        Style="{StaticResource MaterialDesignOutlinedDatePicker}"
+                                        materialDesign:HintAssist.Hint="Срок"
+                                        Language="ru-RU" />
+                        </StackPanel>
 
                         <!-- Center: description -->
                         <TextBox Grid.Column="1"
