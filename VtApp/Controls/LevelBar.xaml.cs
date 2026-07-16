@@ -56,6 +56,7 @@ public partial class LevelBar : UserControl
         InitializeComponent();
         Loaded += (_, _) => Rebuild();
         SizeChanged += (_, _) => UpdateThumb();
+        Root.SizeChanged += (_, _) => UpdateThumb();
     }
 
     private static void OnLayoutChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -152,16 +153,16 @@ public partial class LevelBar : UserControl
         int level;
         if (BarOrientation == Orientation.Vertical)
         {
-            if (Root.ActualHeight <= 0)
+            if (TrackBorder.ActualHeight <= 0)
                 return;
-            var ratio = Math.Clamp(position.Y / Root.ActualHeight, 0, 0.999);
+            var ratio = Math.Clamp(position.Y / TrackBorder.ActualHeight, 0, 0.999);
             level = LevelCount - 1 - (int)(ratio * LevelCount);
         }
         else
         {
-            if (Root.ActualWidth <= 0)
+            if (TrackBorder.ActualWidth <= 0)
                 return;
-            var ratio = Math.Clamp(position.X / Root.ActualWidth, 0, 0.999);
+            var ratio = Math.Clamp(position.X / TrackBorder.ActualWidth, 0, 0.999);
             level = (int)(ratio * LevelCount);
         }
 
@@ -174,25 +175,27 @@ public partial class LevelBar : UserControl
             return;
 
         var value = Math.Clamp(Value, 0, LevelCount - 1);
+        var trackWidth = TrackBorder.ActualWidth;
+        var trackHeight = TrackBorder.ActualHeight;
 
         if (BarOrientation == Orientation.Vertical)
         {
-            if (Root.ActualHeight <= 0)
+            if (trackWidth <= 0 || trackHeight <= 0)
                 return;
 
-            var segmentHeight = Root.ActualHeight / LevelCount;
+            var segmentHeight = trackHeight / LevelCount;
             var indexFromTop = LevelCount - 1 - value;
-            Canvas.SetLeft(Thumb, (Root.ActualWidth - Thumb.Width) / 2);
+            Canvas.SetLeft(Thumb, (trackWidth - Thumb.Width) / 2);
             Canvas.SetTop(Thumb, indexFromTop * segmentHeight + segmentHeight / 2 - Thumb.Height / 2);
         }
         else
         {
-            if (Root.ActualWidth <= 0)
+            if (trackWidth <= 0 || trackHeight <= 0)
                 return;
 
-            var segmentWidth = Root.ActualWidth / LevelCount;
+            var segmentWidth = trackWidth / LevelCount;
             Canvas.SetLeft(Thumb, value * segmentWidth + segmentWidth / 2 - Thumb.Width / 2);
-            Canvas.SetTop(Thumb, (Root.ActualHeight - Thumb.Height) / 2);
+            Canvas.SetTop(Thumb, (trackHeight - Thumb.Height) / 2);
         }
 
         Thumb.Fill = new SolidColorBrush(ColorForLevel(value));
