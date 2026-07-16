@@ -21,13 +21,7 @@
         </Style>
     </UserControl.Resources>
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-
-        <TabControl Grid.Row="0"
-                    HorizontalContentAlignment="Left"
+        <TabControl HorizontalContentAlignment="Left"
                     Style="{StaticResource MaterialDesignFilledTabControl}">
             <TabControl.Resources>
                 <Style TargetType="{x:Type TabPanel}">
@@ -41,155 +35,179 @@
                                              Width="24"
                                              Height="24" />
                 </TabItem.Header>
-                <Grid Margin="0,16,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" MinWidth="220" />
-                        <ColumnDefinition Width="1.4*" MinWidth="240" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled"
+                              Margin="0,30,0,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
 
-                    <!-- Left: title + subtasks -->
-                    <ScrollViewer Grid.Column="0"
-                                  VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled"
-                                  Margin="0,0,12,0">
-                        <StackPanel>
-                            <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                                     materialDesign:HintAssist.Hint="Название"
-                                     Margin="0,0,0,16" />
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" MinWidth="220" />
+                            <ColumnDefinition Width="1.4*" MinWidth="240" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
 
-                            <TextBlock Text="Подзадачи"
-                                       Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
-                                       Margin="0,0,0,8" />
+                        <!-- Left: title -->
+                        <TextBox Grid.Column="0"
+                                 Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                 materialDesign:HintAssist.Hint="Название"
+                                 VerticalAlignment="Top"
+                                 Margin="0,0,12,0" />
 
-                            <ItemsControl ItemsSource="{Binding Subtasks}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
-                                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                                                 Margin="0,0,0,8" />
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+                        <!-- Center: description -->
+                        <TextBox Grid.Column="1"
+                                 Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                 materialDesign:HintAssist.Hint="Описание"
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 VerticalScrollBarVisibility="Auto"
+                                 VerticalContentAlignment="Top"
+                                 Margin="0,0,12,0"
+                                 MinHeight="280" />
 
-                            <Grid Margin="0,8,0,0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
+                        <!-- Right: factors card -->
+                        <materialDesign:Card Grid.Column="2"
+                                             Width="280"
+                                             Padding="20,16"
+                                             VerticalAlignment="Top"
+                                             UniformCornerRadius="8">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal"
+                                            HorizontalAlignment="Center"
+                                            Margin="0,0,0,16">
+                                    <TextBlock Text="Приоритет"
+                                               Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                               VerticalAlignment="Center"
+                                               Opacity="0.7"
+                                               Margin="0,0,12,0" />
+                                    <materialDesign:Chip Content="{Binding PriorityDisplay}"
+                                                         Background="{Binding Priority, Converter={StaticResource TaskPriorityToBrushConverter}}"
+                                                         Foreground="White"
+                                                         IsDeletable="False" />
+                                </StackPanel>
 
-                                <TextBox Grid.Column="0"
-                                         Text="{Binding NewSubtaskTitle, UpdateSourceTrigger=PropertyChanged}"
-                                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                                         materialDesign:HintAssist.Hint="Новая подзадача"
-                                         Margin="0,0,8,0" />
+                                <Grid Margin="0,0,0,20" Height="168">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
 
-                                <Button Grid.Column="1"
-                                        Content="Добавить"
-                                        Style="{StaticResource MaterialDesignOutlinedButton}"
-                                        Command="{Binding AddSubtaskCommand}" />
-                            </Grid>
-                        </StackPanel>
-                    </ScrollViewer>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Важность"
+                                                   Style="{StaticResource FactorLabelStyle}" />
+                                        <controls:LevelBar Value="{Binding Importance, Converter={StaticResource EnumToIntConverter}, Mode=TwoWay}"
+                                                           Maximum="3"
+                                                           BarOrientation="Vertical"
+                                                           Height="140" />
+                                    </StackPanel>
 
-                    <!-- Center: description -->
-                    <TextBox Grid.Column="1"
-                             Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
-                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                             materialDesign:HintAssist.Hint="Описание"
-                             AcceptsReturn="True"
-                             TextWrapping="Wrap"
-                             VerticalScrollBarVisibility="Auto"
-                             VerticalContentAlignment="Top"
-                             Margin="0,0,12,0"
-                             MinHeight="280" />
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="Срочность"
+                                                   Style="{StaticResource FactorLabelStyle}" />
+                                        <controls:LevelBar Value="{Binding Urgency, Converter={StaticResource EnumToIntConverter}, Mode=TwoWay}"
+                                                           Maximum="2"
+                                                           BarOrientation="Vertical"
+                                                           Height="140" />
+                                    </StackPanel>
 
-                    <!-- Right: factors card -->
-                    <materialDesign:Card Grid.Column="2"
-                                         Width="280"
-                                         Padding="20,16"
-                                         VerticalAlignment="Top"
-                                         UniformCornerRadius="8">
-                        <StackPanel>
-                            <StackPanel Orientation="Horizontal"
-                                        HorizontalAlignment="Center"
-                                        Margin="0,0,0,16">
-                                <TextBlock Text="Приоритет"
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="Сложность"
+                                                   Style="{StaticResource FactorLabelStyle}" />
+                                        <controls:LevelBar Value="{Binding Difficulty, Converter={StaticResource EnumToIntConverter}, Mode=TwoWay}"
+                                                           Maximum="2"
+                                                           BarOrientation="Vertical"
+                                                           Height="140" />
+                                    </StackPanel>
+                                </Grid>
+
+                                <TextBlock Text="{Binding ProgressLabel}"
                                            Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                           VerticalAlignment="Center"
                                            Opacity="0.7"
-                                           Margin="0,0,12,0" />
-                                <materialDesign:Chip Content="{Binding PriorityDisplay}"
-                                                     Background="{Binding Priority, Converter={StaticResource TaskPriorityToBrushConverter}}"
-                                                     Foreground="White"
-                                                     IsDeletable="False" />
+                                           Margin="0,0,0,4" />
+                                <Slider Minimum="0"
+                                        Maximum="100"
+                                        Value="{Binding ProgressPercent, Mode=TwoWay}"
+                                        Margin="0,0,0,12" />
+
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0"
+                                               Text="Срыв сроков"
+                                               Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                               Opacity="0.7"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,12,0" />
+                                    <controls:LevelBar Grid.Column="1"
+                                                       Value="{Binding DelayRisk, Converter={StaticResource EnumToIntConverter}, Mode=TwoWay}"
+                                                       Maximum="2"
+                                                       BarOrientation="Horizontal"
+                                                       VerticalAlignment="Center" />
+                                </Grid>
                             </StackPanel>
+                        </materialDesign:Card>
+                    </Grid>
 
-                            <Grid Margin="0,0,0,20" Height="168">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Row="1"
+                                Orientation="Horizontal"
+                                HorizontalAlignment="Right"
+                                Margin="0,30,0,0">
+                        <Button Content="Отмена"
+                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                Margin="0,0,8,0"
+                                Command="{Binding CancelCommand}" />
+                        <Button Content="Сохранить"
+                                Style="{StaticResource MaterialDesignRaisedButton}"
+                                Command="{Binding SaveCommand}" />
+                    </StackPanel>
 
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="Важность"
-                                               Style="{StaticResource FactorLabelStyle}" />
-                                    <controls:LevelBar Value="{Binding Importance, Converter={StaticResource EnumToIntConverter}, Mode=TwoWay}"
-                                                       Maximum="3"
-                                                       BarOrientation="Vertical"
-                                                       Height="140" />
-                                </StackPanel>
+                    <!-- Subtasks at the bottom -->
+                    <StackPanel Grid.Row="2" Margin="0,16,0,0">
+                        <TextBlock Text="Подзадачи"
+                                   Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
+                                   Margin="0,0,0,8" />
 
-                                <StackPanel Grid.Column="1">
-                                    <TextBlock Text="Срочность"
-                                               Style="{StaticResource FactorLabelStyle}" />
-                                    <controls:LevelBar Value="{Binding Urgency, Converter={StaticResource EnumToIntConverter}, Mode=TwoWay}"
-                                                       Maximum="2"
-                                                       BarOrientation="Vertical"
-                                                       Height="140" />
-                                </StackPanel>
+                        <ItemsControl ItemsSource="{Binding Subtasks}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
+                                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                             Margin="0,0,0,8" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
 
-                                <StackPanel Grid.Column="2">
-                                    <TextBlock Text="Сложность"
-                                               Style="{StaticResource FactorLabelStyle}" />
-                                    <controls:LevelBar Value="{Binding Difficulty, Converter={StaticResource EnumToIntConverter}, Mode=TwoWay}"
-                                                       Maximum="2"
-                                                       BarOrientation="Vertical"
-                                                       Height="140" />
-                                </StackPanel>
-                            </Grid>
+                        <Grid Margin="0,8,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
 
-                            <TextBlock Text="{Binding ProgressLabel}"
-                                       Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                       Opacity="0.7"
-                                       Margin="0,0,0,4" />
-                            <Slider Minimum="0"
-                                    Maximum="100"
-                                    Value="{Binding ProgressPercent, Mode=TwoWay}"
-                                    Margin="0,0,0,12" />
+                            <TextBox Grid.Column="0"
+                                     Text="{Binding NewSubtaskTitle, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                     materialDesign:HintAssist.Hint="Новая подзадача"
+                                     Margin="0,0,8,0" />
 
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0"
-                                           Text="Срыв сроков"
-                                           Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                           Opacity="0.7"
-                                           VerticalAlignment="Center"
-                                           Margin="0,0,12,0" />
-                                <controls:LevelBar Grid.Column="1"
-                                                   Value="{Binding DelayRisk, Converter={StaticResource EnumToIntConverter}, Mode=TwoWay}"
-                                                   Maximum="2"
-                                                   BarOrientation="Horizontal"
-                                                   VerticalAlignment="Center" />
-                            </Grid>
-                        </StackPanel>
-                    </materialDesign:Card>
+                            <Button Grid.Column="1"
+                                    VerticalAlignment="Center"
+                                    Content="Добавить"
+                                    Style="{StaticResource MaterialDesignOutlinedButton}"
+                                    Command="{Binding AddSubtaskCommand}" />
+                        </Grid>
+                    </StackPanel>
                 </Grid>
+                </ScrollViewer>
             </TabItem>
 
             <TabItem ToolTip="Файлы"
@@ -204,7 +222,7 @@
                     <StackPanel MaxWidth="480"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Top"
-                                Margin="0,16,0,0">
+                                Margin="0,30,0,0">
                         <Button Content="Добавить файл"
                                 Style="{StaticResource MaterialDesignOutlinedButton}"
                                 HorizontalAlignment="Left"
@@ -267,19 +285,5 @@
                 </ScrollViewer>
             </TabItem>
         </TabControl>
-
-        <StackPanel Grid.Row="1"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Bottom"
-                    Margin="0,16,0,8">
-            <Button Content="Отмена"
-                    Style="{StaticResource MaterialDesignOutlinedButton}"
-                    Margin="0,0,8,0"
-                    Command="{Binding CancelCommand}" />
-            <Button Content="Сохранить"
-                    Style="{StaticResource MaterialDesignRaisedButton}"
-                    Command="{Binding SaveCommand}" />
-        </StackPanel>
     </Grid>
 </UserControl>
