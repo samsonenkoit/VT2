@@ -44,14 +44,11 @@
                                              Width="24"
                                              Height="24" />
                 </TabItem.Header>
-                <ScrollViewer VerticalScrollBarVisibility="Auto"
-                              HorizontalScrollBarVisibility="Disabled"
-                              Margin="0,25,0,0">
-                <Grid>
+                <Grid Margin="0,25,0,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" MinHeight="0" />
                     </Grid.RowDefinitions>
 
                     <Grid Grid.Row="0">
@@ -205,12 +202,22 @@
                     </StackPanel>
 
                     <!-- Subtasks at the bottom -->
-                    <StackPanel Grid.Row="2" Margin="0,16,0,0">
-                        <TextBlock Text="{Binding SubtasksProgressLabel}"
+                    <Grid Grid.Row="2" Margin="0,16,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" MinHeight="0" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0"
+                                   Text="{Binding SubtasksProgressLabel}"
                                    Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
                                    Margin="0,0,0,8" />
 
-                        <ItemsControl ItemsSource="{Binding Subtasks}">
+                        <ScrollViewer Grid.Row="1"
+                                      VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled">
+                            <ItemsControl ItemsSource="{Binding Subtasks}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Border BorderBrush="#E0E0E0"
@@ -380,8 +387,10 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
+                        </ScrollViewer>
 
-                        <TextBox Text="{Binding NewSubtaskDescription, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox Grid.Row="2"
+                                 Text="{Binding NewSubtaskDescription, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  materialDesign:HintAssist.Hint="+ Новая подзадача"
                                  Margin="0,8,0,0">
@@ -389,9 +398,8 @@
                                 <KeyBinding Key="Enter" Command="{Binding AddSubtaskCommand}" />
                             </TextBox.InputBindings>
                         </TextBox>
-                    </StackPanel>
+                    </Grid>
                 </Grid>
-                </ScrollViewer>
             </TabItem>
 
             <TabItem ToolTip="Файлы"
