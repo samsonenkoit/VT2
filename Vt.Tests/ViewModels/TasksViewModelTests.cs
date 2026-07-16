@@ -148,6 +148,9 @@ public class TasksViewModelTests
 
         public Task UpdateAsync(SubtaskDb subtask, CancellationToken cancellationToken = default) =>
             Task.CompletedTask;
+
+        public Task SoftDeleteAsync(int id, CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
     }
 
     private sealed class FakeTaskRepository : ITaskRepository

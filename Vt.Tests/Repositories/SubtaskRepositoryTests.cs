@@ -126,6 +126,53 @@ public class SubtaskRepositoryTests : IDisposable
         Assert.Equal("Новое название", subtasks[0].Title);
     }
 
+    [Fact]
+    public async Task UpdateAsync_PersistsExtendedFields()
+    {
+        var task = CreateTask("Задача");
+        _context.Tasks.Add(task);
+        await _context.SaveChangesAsync();
+
+        var subtask = CreateSubtask("Старое название", task.Id);
+        _context.Subtasks.Add(subtask);
+        await _context.SaveChangesAsync();
+
+        var dueDateUtc = new DateTime(2026, 7, 20, 20, 59, 59, DateTimeKind.Utc);
+        await _repository.UpdateAsync(new SubtaskDb
+        {
+            Id = subtask.Id,
+            Title = "Обновлённая",
+            TaskId = task.Id,
+            Description = "Комментарий",
+            DueDateUtc = dueDateUtc,
+            ProgressPercent = 67,
+        });
+
+        var subtasks = await _repository.GetNotDeletedAsync(task.Id);
+        var updated = Assert.Single(subtasks);
+        Assert.Equal("Обновлённая", updated.Title);
+        Assert.Equal("Комментарий", updated.Description);
+        Assert.Equal(dueDateUtc, updated.DueDateUtc);
+        Assert.Equal(67, updated.ProgressPercent);
+    }
+
+    [Fact]
+    public async Task SoftDeleteAsync_HidesFromGetNotDeleted()
+    {
+        var task = CreateTask("Задача");
+        _context.Tasks.Add(task);
+        await _context.SaveChangesAsync();
+
+        var subtask = CreateSubtask("К удалению", task.Id);
+        _context.Subtasks.Add(subtask);
+        await _context.SaveChangesAsync();
+
+        await _repository.SoftDeleteAsync(subtask.Id);
+
+        Assert.Empty(await _repository.GetNotDeletedAsync(task.Id));
+        Assert.NotNull(_context.Subtasks.Single(s => s.Id == subtask.Id).DeletedAtUtc);
+    }
+
     private static TaskDb CreateTask(string title)
     {
         return new TaskDb

@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Database.Models;
@@ -15,6 +17,7 @@ public partial class TaskEditViewModel : ObservableObject
     private readonly ITaskRepository _taskRepository;
     private readonly ISubtaskRepository _subtaskRepository;
     private readonly ITaskFileService _taskFileService;
+    private readonly List<int> _removedSubtaskIds = [];
     private Action? _onSaved;
     private Action? _onCancelled;
     private int? _taskId;
@@ -24,8 +27,6 @@ public partial class TaskEditViewModel : ObservableObject
     public ObservableCollection<GoalEditItem> Goals { get; } = [];
 
     public ObservableCollection<TaskFileItem> Files { get; } = [];
-
-    public IReadOnlyList<ProgressOption> SubtaskProgressChoices { get; } = SubtaskProgressOptions.All;
 
     public IReadOnlyList<EnumOption<TaskImportance>> ImportanceOptions { get; } =
     [
@@ -100,6 +101,16 @@ public partial class TaskEditViewModel : ObservableObject
 
     public string PageTitle => IsEditMode ? "Редактирование задачи" : "Новая задача";
 
+    public string SubtasksProgressLabel
+    {
+        get
+        {
+            var total = Subtasks.Count;
+            var done = Subtasks.Count(s => s.IsDone);
+            return $"Подзадачи · {done}/{total}";
+        }
+    }
+
     public TaskEditViewModel(
         ITaskRepository taskRepository,
         ISubtaskRepository subtaskRepository,
@@ -108,6 +119,7 @@ public partial class TaskEditViewModel : ObservableObject
         _taskRepository = taskRepository;
         _subtaskRepository = subtaskRepository;
         _taskFileService = taskFileService;
+        Subtasks.CollectionChanged += OnSubtasksCollectionChanged;
     }
 
     public void Configure(Action onSaved, Action onCancelled)
@@ -129,7 +141,7 @@ public partial class TaskEditViewModel : ObservableObject
         Urgency = TaskUrgency.Medium;
         ProgressPercent = 0;
         RecalculatePriority();
-        Subtasks.Clear();
+        ClearSubtasks();
         NewSubtaskTitle = string.Empty;
         ResetGoals();
         Files.Clear();
@@ -154,8 +166,8 @@ public partial class TaskEditViewModel : ObservableObject
         ProgressPercent = task.ProgressPercent;
         RecalculatePriority();
 
+        ClearSubtasks();
         var subtasks = await _subtaskRepository.GetNotDeletedAsync(taskId);
-        Subtasks.Clear();
         foreach (var subtask in subtasks)
         {
             Subtasks.Add(new SubtaskEditItem
@@ -221,10 +233,22 @@ public partial class TaskEditViewModel : ObservableObject
         Subtasks.Add(new SubtaskEditItem
         {
             Title = NewSubtaskTitle.Trim(),
-            DueDate = DateTime.Today.AddDays(3),
+            DueDate = null,
             ProgressPercent = 0,
         });
         NewSubtaskTitle = string.Empty;
+    }
+
+    [RelayCommand]
+    private void RemoveSubtask(SubtaskEditItem? subtask)
+    {
+        if (subtask is null)
+            return;
+
+        if (subtask.Id != 0)
+            _removedSubtaskIds.Add(subtask.Id);
+
+        Subtasks.Remove(subtask);
     }
 
     [RelayCommand(CanExecute = nameof(CanAddFile))]
@@ -299,11 +323,20 @@ public partial class TaskEditViewModel : ObservableObject
 
     private async Task SaveSubtasksAsync(int taskId)
     {
+        foreach (var removedId in _removedSubtaskIds.Distinct())
+            await _subtaskRepository.SoftDeleteAsync(removedId);
+        _removedSubtaskIds.Clear();
+
         foreach (var subtask in Subtasks)
         {
             var trimmedTitle = subtask.Title.Trim();
             if (string.IsNullOrWhiteSpace(trimmedTitle))
                 continue;
+
+            var description = string.IsNullOrWhiteSpace(subtask.Description)
+                ? null
+                : subtask.Description.Trim();
+            var dueDateUtc = ToDueDateUtc(subtask.DueDate);
 
             if (subtask.Id == 0)
             {
@@ -311,6 +344,9 @@ public partial class TaskEditViewModel : ObservableObject
                 {
                     Title = trimmedTitle,
                     TaskId = taskId,
+                    Description = description,
+                    DueDateUtc = dueDateUtc,
+                    ProgressPercent = subtask.ProgressPercent,
                 });
             }
             else
@@ -320,10 +356,49 @@ public partial class TaskEditViewModel : ObservableObject
                     Id = subtask.Id,
                     Title = trimmedTitle,
                     TaskId = taskId,
+                    Description = description,
+                    DueDateUtc = dueDateUtc,
+                    ProgressPercent = subtask.ProgressPercent,
                 });
             }
         }
     }
+
+    private void ClearSubtasks()
+    {
+        foreach (var item in Subtasks)
+            item.PropertyChanged -= OnSubtaskPropertyChanged;
+
+        Subtasks.Clear();
+        _removedSubtaskIds.Clear();
+        NotifySubtasksProgressChanged();
+    }
+
+    private void OnSubtasksCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.OldItems is not null)
+        {
+            foreach (SubtaskEditItem item in e.OldItems)
+                item.PropertyChanged -= OnSubtaskPropertyChanged;
+        }
+
+        if (e.NewItems is not null)
+        {
+            foreach (SubtaskEditItem item in e.NewItems)
+                item.PropertyChanged += OnSubtaskPropertyChanged;
+        }
+
+        NotifySubtasksProgressChanged();
+    }
+
+    private void OnSubtaskPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(SubtaskEditItem.ProgressPercent) or nameof(SubtaskEditItem.IsDone))
+            NotifySubtasksProgressChanged();
+    }
+
+    private void NotifySubtasksProgressChanged() =>
+        OnPropertyChanged(nameof(SubtasksProgressLabel));
 
     private static string? PickFile()
     {
@@ -358,6 +433,9 @@ public partial class TaskEditViewModel : ObservableObject
         return endOfLocalDay.ToUniversalTime();
     }
 
+    public static DateTime? ToDueDateUtc(DateTime? localDate) =>
+        localDate is null ? null : ToDueDateUtc(localDate.Value);
+
     public static DateTime ToDueDateLocal(DateTime dueDateUtc)
     {
         var utc = dueDateUtc.Kind == DateTimeKind.Utc
@@ -365,4 +443,7 @@ public partial class TaskEditViewModel : ObservableObject
             : DateTime.SpecifyKind(dueDateUtc, DateTimeKind.Utc);
         return utc.ToLocalTime().Date;
     }
+
+    public static DateTime? ToDueDateLocal(DateTime? dueDateUtc) =>
+        dueDateUtc is null ? null : ToDueDateLocal(dueDateUtc.Value);
 }

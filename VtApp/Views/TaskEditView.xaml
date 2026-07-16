@@ -6,18 +6,27 @@
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:controls="clr-namespace:VtApp.Controls"
              xmlns:converters="clr-namespace:VtApp.Converters"
+             xmlns:sys="clr-namespace:System;assembly=System.Runtime"
              mc:Ignorable="d"
              d:DesignHeight="600"
              d:DesignWidth="1000">
     <UserControl.Resources>
         <converters:EnumToIntConverter x:Key="EnumToIntConverter" />
         <converters:TaskPriorityToBrushConverter x:Key="TaskPriorityToBrushConverter" />
+        <converters:ProgressAtLeastConverter x:Key="ProgressAtLeastConverter" />
 
         <Style x:Key="FactorLabelStyle" TargetType="TextBlock"
                BasedOn="{StaticResource MaterialDesignCaptionTextBlock}">
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="Opacity" Value="0.7" />
             <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+
+        <Style x:Key="SubtaskFlatTextBoxStyle" TargetType="TextBox"
+               BasedOn="{StaticResource MaterialDesignTextBoxBase}">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
         </Style>
     </UserControl.Resources>
     <Grid>
@@ -197,72 +206,192 @@
 
                     <!-- Subtasks at the bottom -->
                     <StackPanel Grid.Row="2" Margin="0,16,0,0">
-                        <TextBlock Text="Подзадачи"
+                        <TextBlock Text="{Binding SubtasksProgressLabel}"
                                    Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
                                    Margin="0,0,0,8" />
 
-                        <DataGrid ItemsSource="{Binding Subtasks}"
-                                  AutoGenerateColumns="False"
-                                  CanUserAddRows="False"
-                                  CanUserDeleteRows="False"
-                                  HeadersVisibility="Column"
-                                  SelectionUnit="FullRow"
-                                  materialDesign:DataGridAssist.CellPadding="8,4"
-                                  materialDesign:DataGridAssist.ColumnHeaderPadding="8,8">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Подзадача"
-                                                    Binding="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
-                                                    Width="2*"
-                                                    MinWidth="140" />
-                                <DataGridTemplateColumn Header="Срок"
-                                                        Width="140">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <DatePicker SelectedDate="{Binding DueDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                        Style="{StaticResource MaterialDesignOutlinedDatePicker}"
-                                                        Language="ru-RU"
-                                                        Margin="0,2" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Header="Прогресс"
-                                                        Width="100">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <ComboBox ItemsSource="{Binding DataContext.SubtaskProgressChoices, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                      SelectedValue="{Binding ProgressPercent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                      SelectedValuePath="Value"
-                                                      DisplayMemberPath="Display"
-                                                      Style="{StaticResource MaterialDesignOutlinedComboBox}"
-                                                      Margin="0,2" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                                <DataGridTextColumn Header="Комментарий"
-                                                    Binding="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
-                                                    Width="2*"
-                                                    MinWidth="120" />
-                            </DataGrid.Columns>
-                        </DataGrid>
+                        <ItemsControl ItemsSource="{Binding Subtasks}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="#E0E0E0"
+                                            BorderThickness="0,0,0,1"
+                                            Padding="0,6"
+                                            Background="Transparent">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
 
-                        <Grid Margin="0,8,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
+                                            <CheckBox Grid.Column="0"
+                                                      IsChecked="{Binding IsDone, Mode=TwoWay}"
+                                                      VerticalAlignment="Top"
+                                                      Margin="0,2,8,0" />
 
-                            <TextBox Grid.Column="0"
-                                     Text="{Binding NewSubtaskTitle, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                                     materialDesign:HintAssist.Hint="Новая подзадача"
-                                     Margin="0,0,8,0" />
+                                            <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                                                <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
+                                                         FontSize="14">
+                                                    <TextBox.Style>
+                                                        <Style TargetType="TextBox" BasedOn="{StaticResource SubtaskFlatTextBoxStyle}">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsDone}" Value="True">
+                                                                    <Setter Property="TextDecorations" Value="Strikethrough" />
+                                                                    <Setter Property="Opacity" Value="0.55" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBox.Style>
+                                                </TextBox>
+                                                <TextBox Text="{Binding Description, UpdateSourceTrigger=PropertyChanged, TargetNullValue=''}"
+                                                         Style="{StaticResource SubtaskFlatTextBoxStyle}"
+                                                         FontSize="12"
+                                                         Opacity="0.65"
+                                                         materialDesign:HintAssist.Hint="Комментарий"
+                                                         Margin="0,2,0,0" />
+                                            </StackPanel>
 
-                            <Button Grid.Column="1"
-                                    VerticalAlignment="Center"
-                                    Content="Добавить"
-                                    Style="{StaticResource MaterialDesignOutlinedButton}"
-                                    Command="{Binding AddSubtaskCommand}" />
-                        </Grid>
+                                            <StackPanel Grid.Column="2"
+                                                        Orientation="Horizontal"
+                                                        VerticalAlignment="Center"
+                                                        Margin="0,0,12,0">
+                                                <Button Command="{Binding SetProgressCommand}"
+                                                        Width="16" Height="10" Padding="0" Margin="0,0,3,0"
+                                                        Cursor="Hand" Focusable="False" ToolTip="1/3"
+                                                        Background="Transparent" BorderThickness="0">
+                                                    <Button.CommandParameter>
+                                                        <sys:Int32>33</sys:Int32>
+                                                    </Button.CommandParameter>
+                                                    <Border Width="16" Height="10" CornerRadius="2">
+                                                        <Border.Style>
+                                                            <Style TargetType="Border">
+                                                                <Setter Property="Background" Value="#E0E0E0" />
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding ProgressPercent, Converter={StaticResource ProgressAtLeastConverter}, ConverterParameter=33}" Value="True">
+                                                                        <Setter Property="Background" Value="{DynamicResource SecondaryHueMidBrush}" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Border.Style>
+                                                    </Border>
+                                                </Button>
+                                                <Button Command="{Binding SetProgressCommand}"
+                                                        Width="16" Height="10" Padding="0" Margin="0,0,3,0"
+                                                        Cursor="Hand" Focusable="False" ToolTip="2/3"
+                                                        Background="Transparent" BorderThickness="0">
+                                                    <Button.CommandParameter>
+                                                        <sys:Int32>67</sys:Int32>
+                                                    </Button.CommandParameter>
+                                                    <Border Width="16" Height="10" CornerRadius="2">
+                                                        <Border.Style>
+                                                            <Style TargetType="Border">
+                                                                <Setter Property="Background" Value="#E0E0E0" />
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding ProgressPercent, Converter={StaticResource ProgressAtLeastConverter}, ConverterParameter=67}" Value="True">
+                                                                        <Setter Property="Background" Value="{DynamicResource SecondaryHueMidBrush}" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Border.Style>
+                                                    </Border>
+                                                </Button>
+                                                <Button Command="{Binding SetProgressCommand}"
+                                                        Width="16" Height="10" Padding="0" Margin="0,0,3,0"
+                                                        Cursor="Hand" Focusable="False" ToolTip="Готово"
+                                                        Background="Transparent" BorderThickness="0">
+                                                    <Button.CommandParameter>
+                                                        <sys:Int32>100</sys:Int32>
+                                                    </Button.CommandParameter>
+                                                    <Border Width="16" Height="10" CornerRadius="2">
+                                                        <Border.Style>
+                                                            <Style TargetType="Border">
+                                                                <Setter Property="Background" Value="#E0E0E0" />
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding ProgressPercent, Converter={StaticResource ProgressAtLeastConverter}, ConverterParameter=100}" Value="True">
+                                                                        <Setter Property="Background" Value="{DynamicResource SecondaryHueMidBrush}" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Border.Style>
+                                                    </Border>
+                                                </Button>
+                                                <Button Command="{Binding SetProgressCommand}"
+                                                        Width="16" Height="10" Padding="0"
+                                                        Cursor="Hand" Focusable="False" ToolTip="Готово"
+                                                        Background="Transparent" BorderThickness="0">
+                                                    <Button.CommandParameter>
+                                                        <sys:Int32>100</sys:Int32>
+                                                    </Button.CommandParameter>
+                                                    <Border Width="16" Height="10" CornerRadius="2">
+                                                        <Border.Style>
+                                                            <Style TargetType="Border">
+                                                                <Setter Property="Background" Value="#E0E0E0" />
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding ProgressPercent, Converter={StaticResource ProgressAtLeastConverter}, ConverterParameter=100}" Value="True">
+                                                                        <Setter Property="Background" Value="{DynamicResource SecondaryHueMidBrush}" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Border.Style>
+                                                    </Border>
+                                                </Button>
+                                            </StackPanel>
+
+                                            <Grid Grid.Column="3" Margin="0,0,4,0" VerticalAlignment="Center">
+                                                <ToggleButton x:Name="DueDateToggle"
+                                                              Content="{Binding DueDateDisplay}"
+                                                              Style="{StaticResource MaterialDesignFlatButton}"
+                                                              Padding="6,2"
+                                                              FontSize="12"
+                                                              MinWidth="48"
+                                                              ToolTip="Срок" />
+                                                <Popup IsOpen="{Binding IsChecked, ElementName=DueDateToggle}"
+                                                       PlacementTarget="{Binding ElementName=DueDateToggle}"
+                                                       Placement="Bottom"
+                                                       StaysOpen="False"
+                                                       AllowsTransparency="True">
+                                                    <materialDesign:Card Margin="0,4,0,0" Padding="8">
+                                                        <StackPanel>
+                                                            <Calendar SelectedDate="{Binding DueDate, Mode=TwoWay}"
+                                                                      Language="ru-RU" />
+                                                            <Button Content="Без срока"
+                                                                    Margin="0,8,0,0"
+                                                                    Style="{StaticResource MaterialDesignFlatButton}"
+                                                                    Command="{Binding ClearDueDateCommand}"
+                                                                    HorizontalAlignment="Stretch" />
+                                                        </StackPanel>
+                                                    </materialDesign:Card>
+                                                </Popup>
+                                            </Grid>
+
+                                            <materialDesign:PopupBox Grid.Column="4"
+                                                                    VerticalAlignment="Center"
+                                                                    Padding="4"
+                                                                    StaysOpen="False"
+                                                                    ToolTip="Действия">
+                                                <StackPanel>
+                                                    <Button Content="Удалить"
+                                                            Style="{StaticResource MaterialDesignFlatButton}"
+                                                            Command="{Binding DataContext.RemoveSubtaskCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                            CommandParameter="{Binding}" />
+                                                </StackPanel>
+                                            </materialDesign:PopupBox>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <TextBox Text="{Binding NewSubtaskTitle, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                 materialDesign:HintAssist.Hint="+ Новая подзадача"
+                                 Margin="0,8,0,0">
+                            <TextBox.InputBindings>
+                                <KeyBinding Key="Enter" Command="{Binding AddSubtaskCommand}" />
+                            </TextBox.InputBindings>
+                        </TextBox>
                     </StackPanel>
                 </Grid>
                 </ScrollViewer>

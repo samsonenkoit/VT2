@@ -10,7 +10,7 @@ public class SubtaskDb
 
     public string? Description { get; set; }
 
-    public DateTime DueDateUtc { get; set; }
+    public DateTime? DueDateUtc { get; set; }
 
     public int ProgressPercent { get; set; }
 

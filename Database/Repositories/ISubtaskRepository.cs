@@ -9,4 +9,6 @@ public interface ISubtaskRepository
     Task<SubtaskDb> AddAsync(SubtaskDb subtask, CancellationToken cancellationToken = default);
 
     Task UpdateAsync(SubtaskDb subtask, CancellationToken cancellationToken = default);
+
+    Task SoftDeleteAsync(int id, CancellationToken cancellationToken = default);
 }

@@ -113,5 +113,8 @@ public class MainWindowViewModelTests
 
         public Task UpdateAsync(SubtaskDb subtask, CancellationToken cancellationToken = default) =>
             Task.CompletedTask;
+
+        public Task SoftDeleteAsync(int id, CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
     }
 }

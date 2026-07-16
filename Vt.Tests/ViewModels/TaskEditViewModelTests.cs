@@ -270,8 +270,9 @@ public class TaskEditViewModelTests
         Assert.Equal("Новая подзадача", subtask.Title);
         Assert.Equal(0, subtask.Id);
         Assert.Equal(0, subtask.ProgressPercent);
-        Assert.Equal(DateTime.Today.AddDays(3), subtask.DueDate);
+        Assert.Null(subtask.DueDate);
         Assert.Equal(string.Empty, viewModel.NewSubtaskTitle);
+        Assert.Equal("Подзадачи · 0/1", viewModel.SubtasksProgressLabel);
         Assert.Empty(subtaskRepository.AddedSubtasks);
     }
 
@@ -461,6 +462,91 @@ public class TaskEditViewModelTests
 
         Assert.Empty(viewModel.Subtasks);
         Assert.Equal(string.Empty, viewModel.NewSubtaskTitle);
+        Assert.Equal("Подзадачи · 0/0", viewModel.SubtasksProgressLabel);
+    }
+
+    [Fact]
+    public async Task SaveAsync_Create_PersistsSubtaskExtendedFields()
+    {
+        var taskRepository = new FakeTaskRepository([]);
+        var subtaskRepository = new FakeSubtaskRepository([]);
+        var viewModel = CreateViewModel(taskRepository, subtaskRepository);
+        var due = new DateTime(2026, 8, 1);
+
+        viewModel.PrepareForCreate();
+        viewModel.Title = "Задача";
+        viewModel.Subtasks.Add(new SubtaskEditItem
+        {
+            Title = "Шаг",
+            Description = "  Комментарий  ",
+            DueDate = due,
+            ProgressPercent = 67,
+        });
+        await viewModel.SaveCommand.ExecuteAsync(null);
+
+        var added = Assert.Single(subtaskRepository.AddedSubtasks);
+        Assert.Equal("Шаг", added.Title);
+        Assert.Equal("Комментарий", added.Description);
+        Assert.Equal(TaskEditViewModel.ToDueDateUtc(due), added.DueDateUtc);
+        Assert.Equal(67, added.ProgressPercent);
+    }
+
+    [Fact]
+    public async Task SaveAsync_Edit_SoftDeletesRemovedSubtasks()
+    {
+        var task = new TaskDb
+        {
+            Id = 5,
+            Title = "Задача",
+            DueDateUtc = new DateTime(2026, 4, 1),
+            ProgressPercent = 0,
+            Priority = TaskPriority.Medium,
+        };
+        var subtaskRepository = new FakeSubtaskRepository(
+        [
+            new SubtaskDb { Id = 20, Title = "Старая", TaskId = 5 },
+            new SubtaskDb { Id = 21, Title = "Удаляемая", TaskId = 5 },
+        ]);
+        var viewModel = CreateViewModel(new FakeTaskRepository([task]), subtaskRepository);
+
+        await viewModel.PrepareForEditAsync(5);
+        viewModel.RemoveSubtaskCommand.Execute(viewModel.Subtasks[1]);
+        await viewModel.SaveCommand.ExecuteAsync(null);
+
+        Assert.Equal([21], subtaskRepository.SoftDeletedIds);
+        Assert.Single(viewModel.Subtasks);
+        Assert.Equal("Подзадачи · 0/1", viewModel.SubtasksProgressLabel);
+    }
+
+    [Fact]
+    public void SubtaskIsDone_AndSetProgress_UpdateProgressPercent()
+    {
+        var item = new SubtaskEditItem { Title = "Шаг", ProgressPercent = 0 };
+
+        item.SetProgressCommand.Execute(67);
+        Assert.Equal(67, item.ProgressPercent);
+        Assert.False(item.IsDone);
+
+        item.IsDone = true;
+        Assert.Equal(100, item.ProgressPercent);
+        Assert.True(item.IsDone);
+
+        item.IsDone = false;
+        Assert.Equal(0, item.ProgressPercent);
+    }
+
+    [Fact]
+    public void SubtasksProgressLabel_UpdatesWhenProgressChanges()
+    {
+        var viewModel = CreateViewModel(new FakeTaskRepository([]));
+        viewModel.PrepareForCreate();
+        viewModel.Subtasks.Add(new SubtaskEditItem { Title = "A", ProgressPercent = 0 });
+        viewModel.Subtasks.Add(new SubtaskEditItem { Title = "B", ProgressPercent = 100 });
+
+        Assert.Equal("Подзадачи · 1/2", viewModel.SubtasksProgressLabel);
+
+        viewModel.Subtasks[0].ProgressPercent = 100;
+        Assert.Equal("Подзадачи · 2/2", viewModel.SubtasksProgressLabel);
     }
 
     private static TaskEditViewModel CreateViewModel(
@@ -509,10 +595,11 @@ public class TaskEditViewModelTests
     {
         public List<SubtaskDb> AddedSubtasks { get; } = [];
         public List<SubtaskDb> UpdatedSubtasks { get; } = [];
+        public List<int> SoftDeletedIds { get; } = [];
 
         public Task<IReadOnlyList<SubtaskDb>> GetNotDeletedAsync(int taskId, CancellationToken cancellationToken = default) =>
             Task.FromResult<IReadOnlyList<SubtaskDb>>(
-                subtasks.Where(s => s.TaskId == taskId && s.DeletedAtUtc is null).ToList());
+                subtasks.Where(s => s.TaskId == taskId && s.DeletedAtUtc is null && !SoftDeletedIds.Contains(s.Id)).ToList());
 
         public Task<SubtaskDb> AddAsync(SubtaskDb subtask, CancellationToken cancellationToken = default)
         {
@@ -524,6 +611,12 @@ public class TaskEditViewModelTests
         public Task UpdateAsync(SubtaskDb subtask, CancellationToken cancellationToken = default)
         {
             UpdatedSubtasks.Add(subtask);
+            return Task.CompletedTask;
+        }
+
+        public Task SoftDeleteAsync(int id, CancellationToken cancellationToken = default)
+        {
+            SoftDeletedIds.Add(id);
             return Task.CompletedTask;
         }
     }
