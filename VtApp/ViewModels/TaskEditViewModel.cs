@@ -25,6 +25,8 @@ public partial class TaskEditViewModel : ObservableObject
 
     public ObservableCollection<TaskFileItem> Files { get; } = [];
 
+    public IReadOnlyList<ProgressOption> SubtaskProgressChoices { get; } = SubtaskProgressOptions.All;
+
     public IReadOnlyList<EnumOption<TaskImportance>> ImportanceOptions { get; } =
     [
         new() { Value = TaskImportance.Low, Display = TaskFactorDisplay.Importance(TaskImportance.Low) },
@@ -160,6 +162,9 @@ public partial class TaskEditViewModel : ObservableObject
             {
                 Id = subtask.Id,
                 Title = subtask.Title,
+                Description = subtask.Description,
+                DueDate = ToDueDateLocal(subtask.DueDateUtc),
+                ProgressPercent = SubtaskProgressOptions.Normalize(subtask.ProgressPercent),
             });
         }
 
@@ -213,7 +218,12 @@ public partial class TaskEditViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanAddSubtask))]
     private void AddSubtask()
     {
-        Subtasks.Add(new SubtaskEditItem { Title = NewSubtaskTitle.Trim() });
+        Subtasks.Add(new SubtaskEditItem
+        {
+            Title = NewSubtaskTitle.Trim(),
+            DueDate = DateTime.Today.AddDays(3),
+            ProgressPercent = 0,
+        });
         NewSubtaskTitle = string.Empty;
     }
 

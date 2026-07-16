@@ -269,8 +269,44 @@ public class TaskEditViewModelTests
         var subtask = Assert.Single(viewModel.Subtasks);
         Assert.Equal("Новая подзадача", subtask.Title);
         Assert.Equal(0, subtask.Id);
+        Assert.Equal(0, subtask.ProgressPercent);
+        Assert.Equal(DateTime.Today.AddDays(3), subtask.DueDate);
         Assert.Equal(string.Empty, viewModel.NewSubtaskTitle);
         Assert.Empty(subtaskRepository.AddedSubtasks);
+    }
+
+    [Fact]
+    public async Task PrepareForEditAsync_LoadsSubtaskExtendedFields()
+    {
+        var localDue = new DateTime(2026, 7, 20);
+        var task = new TaskDb
+        {
+            Id = 1,
+            Title = "Задача",
+            DueDateUtc = TaskEditViewModel.ToDueDateUtc(DateTime.Today.AddDays(3)),
+            ProgressPercent = 0,
+            Priority = TaskPriority.Medium,
+        };
+        var subtaskRepository = new FakeSubtaskRepository(
+        [
+            new SubtaskDb
+            {
+                Id = 10,
+                Title = "Подзадача 1",
+                TaskId = 1,
+                Description = "Комментарий",
+                DueDateUtc = TaskEditViewModel.ToDueDateUtc(localDue),
+                ProgressPercent = 100,
+            },
+        ]);
+        var viewModel = CreateViewModel(new FakeTaskRepository([task]), subtaskRepository);
+
+        await viewModel.PrepareForEditAsync(1);
+
+        var subtask = Assert.Single(viewModel.Subtasks);
+        Assert.Equal("Комментарий", subtask.Description);
+        Assert.Equal(localDue, subtask.DueDate);
+        Assert.Equal(100, subtask.ProgressPercent);
     }
 
     [Fact]

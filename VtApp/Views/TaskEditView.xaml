@@ -201,15 +201,49 @@
                                    Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
                                    Margin="0,0,0,8" />
 
-                        <ItemsControl ItemsSource="{Binding Subtasks}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
-                                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                                             Margin="0,0,0,8" />
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                        <DataGrid ItemsSource="{Binding Subtasks}"
+                                  AutoGenerateColumns="False"
+                                  CanUserAddRows="False"
+                                  CanUserDeleteRows="False"
+                                  HeadersVisibility="Column"
+                                  SelectionUnit="FullRow"
+                                  materialDesign:DataGridAssist.CellPadding="8,4"
+                                  materialDesign:DataGridAssist.ColumnHeaderPadding="8,8">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Подзадача"
+                                                    Binding="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
+                                                    Width="2*"
+                                                    MinWidth="140" />
+                                <DataGridTemplateColumn Header="Срок"
+                                                        Width="140">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <DatePicker SelectedDate="{Binding DueDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                        Style="{StaticResource MaterialDesignOutlinedDatePicker}"
+                                                        Language="ru-RU"
+                                                        Margin="0,2" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="Прогресс"
+                                                        Width="100">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <ComboBox ItemsSource="{Binding DataContext.SubtaskProgressChoices, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                      SelectedValue="{Binding ProgressPercent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                      SelectedValuePath="Value"
+                                                      DisplayMemberPath="Display"
+                                                      Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                                                      Margin="0,2" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="Комментарий"
+                                                    Binding="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
+                                                    Width="2*"
+                                                    MinWidth="120" />
+                            </DataGrid.Columns>
+                        </DataGrid>
 
                         <Grid Margin="0,8,0,0">
                             <Grid.ColumnDefinitions>
