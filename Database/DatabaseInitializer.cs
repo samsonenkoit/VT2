@@ -8,7 +8,6 @@ public sealed class DatabaseInitializer(IAppDataPathProvider pathProvider)
     public void Run()
     {
         var databasePath = pathProvider.GetDatabaseFilePath();
-        var isNewDatabase = !File.Exists(databasePath);
 
         Directory.CreateDirectory(Path.GetDirectoryName(databasePath)!);
 
@@ -17,10 +16,8 @@ public sealed class DatabaseInitializer(IAppDataPathProvider pathProvider)
             .Options;
 
         using var context = new VtDbContext(options);
+        context.Database.EnsureDeleted();
         context.Database.EnsureCreated();
-
-        if (!isNewDatabase)
-            return;
 
         var (tasks, subtasks) = TaskSeedData.GetSeedData();
         context.Tasks.AddRange(tasks);

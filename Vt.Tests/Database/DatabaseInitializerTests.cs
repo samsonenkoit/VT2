@@ -32,7 +32,7 @@ public class DatabaseInitializerTests : IDisposable
     }
 
     [Fact]
-    public void Initialize_WhenDatabaseFileExists_DoesNotSeedAgain()
+    public void Initialize_WhenDatabaseFileExists_RecreatesAndSeedsAgain()
     {
         var pathProvider = new TestAppDataPathProvider(_tempDirectory);
         var initializer = new DatabaseInitializer(pathProvider);
@@ -50,8 +50,8 @@ public class DatabaseInitializerTests : IDisposable
 
         using (var contextAfterSecondInit = CreateContext(pathProvider.GetDatabaseFilePath()))
         {
-            var taskCount = contextAfterSecondInit.Tasks.Count();
-            Assert.Equal(0, taskCount);
+            var taskCount = contextAfterSecondInit.Tasks.Count(t => t.DeletedAtUtc == null);
+            Assert.Equal(TaskSeedData.GetSeedData().Tasks.Count, taskCount);
         }
     }
 
