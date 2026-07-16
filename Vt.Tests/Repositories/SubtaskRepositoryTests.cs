@@ -42,7 +42,7 @@ public class SubtaskRepositoryTests : IDisposable
         var active = await _repository.GetNotDeletedAsync(task.Id);
 
         Assert.Single(active);
-        Assert.Equal("Активная", active[0].Title);
+        Assert.Equal("Активная", active[0].Description);
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public class SubtaskRepositoryTests : IDisposable
         var subtasks = await _repository.GetNotDeletedAsync(firstTask.Id);
 
         Assert.Single(subtasks);
-        Assert.Equal("Подзадача 1", subtasks[0].Title);
+        Assert.Equal("Подзадача 1", subtasks[0].Description);
     }
 
     [Fact]
@@ -77,7 +77,7 @@ public class SubtaskRepositoryTests : IDisposable
 
         var subtasks = await _repository.GetNotDeletedAsync(task.Id);
         Assert.Single(subtasks);
-        Assert.Equal("Новая подзадача", subtasks[0].Title);
+        Assert.Equal("Новая подзадача", subtasks[0].Description);
     }
 
     [Fact]
@@ -96,14 +96,14 @@ public class SubtaskRepositoryTests : IDisposable
         await _repository.UpdateAsync(new SubtaskDb
         {
             Id = subtask.Id,
-            Title = "Новое название",
+            Description = "Новое название",
             TaskId = task.Id,
         });
 
         var subtasks = await _repository.GetNotDeletedAsync(task.Id);
 
         Assert.Single(subtasks);
-        Assert.Equal("Новое название", subtasks[0].Title);
+        Assert.Equal("Новое название", subtasks[0].Description);
     }
 
     [Fact]
@@ -117,13 +117,13 @@ public class SubtaskRepositoryTests : IDisposable
         _context.Subtasks.Add(subtask);
         await _context.SaveChangesAsync();
 
-        subtask.Title = "Новое название";
+        subtask.Description = "Новое название";
         await _repository.UpdateAsync(subtask);
 
         var subtasks = await _repository.GetNotDeletedAsync(task.Id);
 
         Assert.Single(subtasks);
-        Assert.Equal("Новое название", subtasks[0].Title);
+        Assert.Equal("Новое название", subtasks[0].Description);
     }
 
     [Fact]
@@ -141,17 +141,15 @@ public class SubtaskRepositoryTests : IDisposable
         await _repository.UpdateAsync(new SubtaskDb
         {
             Id = subtask.Id,
-            Title = "Обновлённая",
+            Description = "Обновлённая",
             TaskId = task.Id,
-            Description = "Комментарий",
             DueDateUtc = dueDateUtc,
             ProgressPercent = 67,
         });
 
         var subtasks = await _repository.GetNotDeletedAsync(task.Id);
         var updated = Assert.Single(subtasks);
-        Assert.Equal("Обновлённая", updated.Title);
-        Assert.Equal("Комментарий", updated.Description);
+        Assert.Equal("Обновлённая", updated.Description);
         Assert.Equal(dueDateUtc, updated.DueDateUtc);
         Assert.Equal(67, updated.ProgressPercent);
     }
@@ -184,11 +182,11 @@ public class SubtaskRepositoryTests : IDisposable
         };
     }
 
-    private static SubtaskDb CreateSubtask(string title, int taskId, DateTime? deletedAt = null)
+    private static SubtaskDb CreateSubtask(string description, int taskId, DateTime? deletedAt = null)
     {
         return new SubtaskDb
         {
-            Title = title,
+            Description = description,
             TaskId = taskId,
             DeletedAtUtc = deletedAt,
         };

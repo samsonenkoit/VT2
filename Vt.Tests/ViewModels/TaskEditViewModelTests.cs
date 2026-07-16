@@ -243,17 +243,17 @@ public class TaskEditViewModelTests
         };
         var subtaskRepository = new FakeSubtaskRepository(
         [
-            new SubtaskDb { Id = 10, Title = "Подзадача 1", TaskId = 1 },
-            new SubtaskDb { Id = 11, Title = "Подзадача 2", TaskId = 1 },
+            new SubtaskDb { Id = 10, Description = "Подзадача 1", TaskId = 1 },
+            new SubtaskDb { Id = 11, Description = "Подзадача 2", TaskId = 1 },
         ]);
         var viewModel = CreateViewModel(new FakeTaskRepository([task]), subtaskRepository);
 
         await viewModel.PrepareForEditAsync(1);
 
         Assert.Equal(2, viewModel.Subtasks.Count);
-        Assert.Equal("Подзадача 1", viewModel.Subtasks[0].Title);
+        Assert.Equal("Подзадача 1", viewModel.Subtasks[0].Description);
         Assert.Equal(10, viewModel.Subtasks[0].Id);
-        Assert.Equal("Подзадача 2", viewModel.Subtasks[1].Title);
+        Assert.Equal("Подзадача 2", viewModel.Subtasks[1].Description);
     }
 
     [Fact]
@@ -262,16 +262,16 @@ public class TaskEditViewModelTests
         var subtaskRepository = new FakeSubtaskRepository([]);
         var viewModel = CreateViewModel(new FakeTaskRepository([]), subtaskRepository);
         viewModel.PrepareForCreate();
-        viewModel.NewSubtaskTitle = "  Новая подзадача  ";
+        viewModel.NewSubtaskDescription = "  Новая подзадача  ";
 
         viewModel.AddSubtaskCommand.Execute(null);
 
         var subtask = Assert.Single(viewModel.Subtasks);
-        Assert.Equal("Новая подзадача", subtask.Title);
+        Assert.Equal("Новая подзадача", subtask.Description);
         Assert.Equal(0, subtask.Id);
         Assert.Equal(0, subtask.ProgressPercent);
         Assert.Null(subtask.DueDate);
-        Assert.Equal(string.Empty, viewModel.NewSubtaskTitle);
+        Assert.Equal(string.Empty, viewModel.NewSubtaskDescription);
         Assert.Equal("Подзадачи · 0/1", viewModel.SubtasksProgressLabel);
         Assert.Empty(subtaskRepository.AddedSubtasks);
     }
@@ -293,9 +293,8 @@ public class TaskEditViewModelTests
             new SubtaskDb
             {
                 Id = 10,
-                Title = "Подзадача 1",
+                Description = "Подзадача 1",
                 TaskId = 1,
-                Description = "Комментарий",
                 DueDateUtc = TaskEditViewModel.ToDueDateUtc(localDue),
                 ProgressPercent = 100,
             },
@@ -305,7 +304,7 @@ public class TaskEditViewModelTests
         await viewModel.PrepareForEditAsync(1);
 
         var subtask = Assert.Single(viewModel.Subtasks);
-        Assert.Equal("Комментарий", subtask.Description);
+        Assert.Equal("Подзадача 1", subtask.Description);
         Assert.Equal(localDue, subtask.DueDate);
         Assert.Equal(100, subtask.ProgressPercent);
     }
@@ -319,14 +318,14 @@ public class TaskEditViewModelTests
 
         viewModel.PrepareForCreate();
         viewModel.Title = "Задача";
-        viewModel.Subtasks.Add(new SubtaskEditItem { Title = "Шаг 1" });
-        viewModel.Subtasks.Add(new SubtaskEditItem { Title = "Шаг 2" });
+        viewModel.Subtasks.Add(new SubtaskEditItem { Description = "Шаг 1" });
+        viewModel.Subtasks.Add(new SubtaskEditItem { Description = "Шаг 2" });
         await viewModel.SaveCommand.ExecuteAsync(null);
 
         Assert.Equal(2, subtaskRepository.AddedSubtasks.Count);
         Assert.All(subtaskRepository.AddedSubtasks, s => Assert.Equal(1, s.TaskId));
-        Assert.Equal("Шаг 1", subtaskRepository.AddedSubtasks[0].Title);
-        Assert.Equal("Шаг 2", subtaskRepository.AddedSubtasks[1].Title);
+        Assert.Equal("Шаг 1", subtaskRepository.AddedSubtasks[0].Description);
+        Assert.Equal("Шаг 2", subtaskRepository.AddedSubtasks[1].Description);
     }
 
     [Fact]
@@ -342,21 +341,21 @@ public class TaskEditViewModelTests
         };
         var subtaskRepository = new FakeSubtaskRepository(
         [
-            new SubtaskDb { Id = 20, Title = "Старая", TaskId = 5 },
+            new SubtaskDb { Id = 20, Description = "Старая", TaskId = 5 },
         ]);
         var viewModel = CreateViewModel(new FakeTaskRepository([task]), subtaskRepository);
 
         await viewModel.PrepareForEditAsync(5);
-        viewModel.Subtasks[0].Title = "Обновлённая";
-        viewModel.Subtasks.Add(new SubtaskEditItem { Title = "Новая" });
+        viewModel.Subtasks[0].Description = "Обновлённая";
+        viewModel.Subtasks.Add(new SubtaskEditItem { Description = "Новая" });
         await viewModel.SaveCommand.ExecuteAsync(null);
 
         Assert.Single(subtaskRepository.UpdatedSubtasks);
-        Assert.Equal("Обновлённая", subtaskRepository.UpdatedSubtasks[0].Title);
+        Assert.Equal("Обновлённая", subtaskRepository.UpdatedSubtasks[0].Description);
         Assert.Equal(20, subtaskRepository.UpdatedSubtasks[0].Id);
 
         var added = Assert.Single(subtaskRepository.AddedSubtasks);
-        Assert.Equal("Новая", added.Title);
+        Assert.Equal("Новая", added.Description);
         Assert.Equal(5, added.TaskId);
     }
 
@@ -455,13 +454,13 @@ public class TaskEditViewModelTests
     public void PrepareForCreate_ClearsSubtasks()
     {
         var viewModel = CreateViewModel(new FakeTaskRepository([]));
-        viewModel.Subtasks.Add(new SubtaskEditItem { Title = "Остаток" });
-        viewModel.NewSubtaskTitle = "Черновик";
+        viewModel.Subtasks.Add(new SubtaskEditItem { Description = "Остаток" });
+        viewModel.NewSubtaskDescription = "Черновик";
 
         viewModel.PrepareForCreate();
 
         Assert.Empty(viewModel.Subtasks);
-        Assert.Equal(string.Empty, viewModel.NewSubtaskTitle);
+        Assert.Equal(string.Empty, viewModel.NewSubtaskDescription);
         Assert.Equal("Подзадачи · 0/0", viewModel.SubtasksProgressLabel);
     }
 
@@ -477,16 +476,14 @@ public class TaskEditViewModelTests
         viewModel.Title = "Задача";
         viewModel.Subtasks.Add(new SubtaskEditItem
         {
-            Title = "Шаг",
-            Description = "  Комментарий  ",
+            Description = "  Шаг с комментарием  ",
             DueDate = due,
             ProgressPercent = 67,
         });
         await viewModel.SaveCommand.ExecuteAsync(null);
 
         var added = Assert.Single(subtaskRepository.AddedSubtasks);
-        Assert.Equal("Шаг", added.Title);
-        Assert.Equal("Комментарий", added.Description);
+        Assert.Equal("Шаг с комментарием", added.Description);
         Assert.Equal(TaskEditViewModel.ToDueDateUtc(due), added.DueDateUtc);
         Assert.Equal(67, added.ProgressPercent);
     }
@@ -504,8 +501,8 @@ public class TaskEditViewModelTests
         };
         var subtaskRepository = new FakeSubtaskRepository(
         [
-            new SubtaskDb { Id = 20, Title = "Старая", TaskId = 5 },
-            new SubtaskDb { Id = 21, Title = "Удаляемая", TaskId = 5 },
+            new SubtaskDb { Id = 20, Description = "Старая", TaskId = 5 },
+            new SubtaskDb { Id = 21, Description = "Удаляемая", TaskId = 5 },
         ]);
         var viewModel = CreateViewModel(new FakeTaskRepository([task]), subtaskRepository);
 
@@ -521,7 +518,7 @@ public class TaskEditViewModelTests
     [Fact]
     public void SubtaskIsDone_AndSetProgress_UpdateProgressPercent()
     {
-        var item = new SubtaskEditItem { Title = "Шаг", ProgressPercent = 0 };
+        var item = new SubtaskEditItem { Description = "Шаг", ProgressPercent = 0 };
 
         item.SetProgressCommand.Execute(67);
         Assert.Equal(67, item.ProgressPercent);
@@ -540,8 +537,8 @@ public class TaskEditViewModelTests
     {
         var viewModel = CreateViewModel(new FakeTaskRepository([]));
         viewModel.PrepareForCreate();
-        viewModel.Subtasks.Add(new SubtaskEditItem { Title = "A", ProgressPercent = 0 });
-        viewModel.Subtasks.Add(new SubtaskEditItem { Title = "B", ProgressPercent = 100 });
+        viewModel.Subtasks.Add(new SubtaskEditItem { Description = "A", ProgressPercent = 0 });
+        viewModel.Subtasks.Add(new SubtaskEditItem { Description = "B", ProgressPercent = 100 });
 
         Assert.Equal("Подзадачи · 1/2", viewModel.SubtasksProgressLabel);
 

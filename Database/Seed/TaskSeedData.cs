@@ -148,11 +148,11 @@ public static class TaskSeedData
 
         var subtasks = new List<SubtaskDb>
         {
-            new() { Title = "Запросить правки у юридического отдела", TaskId = 1 },
-            new() { Title = "Согласовать сумму с финансовым директором", TaskId = 1 },
-            new() { Title = "Отправить финальную версию поставщику", TaskId = 1 },
-            new() { Title = "Воспроизвести ошибку на тестовых данных", TaskId = 2 },
-            new() { Title = "Исправить расчёт итоговой строки", TaskId = 2 },
+            new() { Description = "Запросить правки у юридического отдела", TaskId = 1 },
+            new() { Description = "Согласовать сумму с финансовым директором", TaskId = 1 },
+            new() { Description = "Отправить финальную версию поставщику", TaskId = 1 },
+            new() { Description = "Воспроизвести ошибку на тестовых данных", TaskId = 2 },
+            new() { Description = "Исправить расчёт итоговой строки", TaskId = 2 },
         };
 
         return (tasks, subtasks);

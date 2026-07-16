@@ -71,7 +71,7 @@ public partial class TaskEditViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(AddSubtaskCommand))]
-    private string _newSubtaskTitle = string.Empty;
+    private string _newSubtaskDescription = string.Empty;
 
     [ObservableProperty]
     private bool _isEditMode;
@@ -142,7 +142,7 @@ public partial class TaskEditViewModel : ObservableObject
         ProgressPercent = 0;
         RecalculatePriority();
         ClearSubtasks();
-        NewSubtaskTitle = string.Empty;
+        NewSubtaskDescription = string.Empty;
         ResetGoals();
         Files.Clear();
         NotifyFilesStateChanged();
@@ -173,14 +173,13 @@ public partial class TaskEditViewModel : ObservableObject
             Subtasks.Add(new SubtaskEditItem
             {
                 Id = subtask.Id,
-                Title = subtask.Title,
                 Description = subtask.Description,
                 DueDate = ToDueDateLocal(subtask.DueDateUtc),
                 ProgressPercent = SubtaskProgressOptions.Normalize(subtask.ProgressPercent),
             });
         }
 
-        NewSubtaskTitle = string.Empty;
+        NewSubtaskDescription = string.Empty;
         ResetGoals();
 
         var files = await _taskFileService.GetFilesAsync(taskId);
@@ -223,7 +222,7 @@ public partial class TaskEditViewModel : ObservableObject
 
     private bool CanSave() => !string.IsNullOrWhiteSpace(Title);
 
-    private bool CanAddSubtask() => !string.IsNullOrWhiteSpace(NewSubtaskTitle);
+    private bool CanAddSubtask() => !string.IsNullOrWhiteSpace(NewSubtaskDescription);
 
     private bool CanAddFile() => CanManageFiles;
 
@@ -232,11 +231,11 @@ public partial class TaskEditViewModel : ObservableObject
     {
         Subtasks.Add(new SubtaskEditItem
         {
-            Title = NewSubtaskTitle.Trim(),
+            Description = NewSubtaskDescription.Trim(),
             DueDate = null,
             ProgressPercent = 0,
         });
-        NewSubtaskTitle = string.Empty;
+        NewSubtaskDescription = string.Empty;
     }
 
     [RelayCommand]
@@ -329,22 +328,18 @@ public partial class TaskEditViewModel : ObservableObject
 
         foreach (var subtask in Subtasks)
         {
-            var trimmedTitle = subtask.Title.Trim();
-            if (string.IsNullOrWhiteSpace(trimmedTitle))
+            var trimmedDescription = subtask.Description.Trim();
+            if (string.IsNullOrWhiteSpace(trimmedDescription))
                 continue;
 
-            var description = string.IsNullOrWhiteSpace(subtask.Description)
-                ? null
-                : subtask.Description.Trim();
             var dueDateUtc = ToDueDateUtc(subtask.DueDate);
 
             if (subtask.Id == 0)
             {
                 await _subtaskRepository.AddAsync(new SubtaskDb
                 {
-                    Title = trimmedTitle,
                     TaskId = taskId,
-                    Description = description,
+                    Description = trimmedDescription,
                     DueDateUtc = dueDateUtc,
                     ProgressPercent = subtask.ProgressPercent,
                 });
@@ -354,9 +349,8 @@ public partial class TaskEditViewModel : ObservableObject
                 await _subtaskRepository.UpdateAsync(new SubtaskDb
                 {
                     Id = subtask.Id,
-                    Title = trimmedTitle,
                     TaskId = taskId,
-                    Description = description,
+                    Description = trimmedDescription,
                     DueDateUtc = dueDateUtc,
                     ProgressPercent = subtask.ProgressPercent,
                 });

@@ -27,7 +27,6 @@ public class SubtaskRepository(VtDbContext context) : ISubtaskRepository
         if (existing is null)
             return;
 
-        existing.Title = subtask.Title;
         existing.TaskId = subtask.TaskId;
         existing.Description = subtask.Description;
         existing.DueDateUtc = subtask.DueDateUtc;

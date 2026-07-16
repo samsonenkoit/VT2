@@ -8,11 +8,7 @@ public partial class SubtaskEditItem : ObservableObject
     public int Id { get; init; }
 
     [ObservableProperty]
-    private string _title = string.Empty;
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasDescription))]
-    private string? _description;
+    private string _description = string.Empty;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(DueDateDisplay))]
@@ -22,8 +18,6 @@ public partial class SubtaskEditItem : ObservableObject
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsDone))]
     private int _progressPercent;
-
-    public bool HasDescription => !string.IsNullOrWhiteSpace(Description);
 
     public bool HasDueDate => DueDate is not null;
 

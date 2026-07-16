@@ -33,7 +33,7 @@ public class VtDbContext(DbContextOptions<VtDbContext> options) : DbContext(opti
         modelBuilder.Entity<SubtaskDb>(entity =>
         {
             entity.HasKey(s => s.Id);
-            entity.Property(s => s.Title).IsRequired().HasMaxLength(500);
+            entity.Property(s => s.Description).IsRequired().HasMaxLength(2000);
         });
 
         modelBuilder.Entity<TaskFileDb>(entity =>
