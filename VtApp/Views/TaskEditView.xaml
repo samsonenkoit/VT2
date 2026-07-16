@@ -176,7 +176,7 @@
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Grid.Column="0"
-                                           Text="Риск срыва сроков"
+                                           Text="Срыв сроков"
                                            Style="{StaticResource MaterialDesignBody2TextBlock}"
                                            Opacity="0.7"
                                            VerticalAlignment="Center"
