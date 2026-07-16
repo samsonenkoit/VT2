@@ -381,6 +381,40 @@ public class TaskEditViewModelTests
     }
 
     [Fact]
+    public void PrepareForCreate_ResetsGoalsToThreeEmptySlots()
+    {
+        var viewModel = CreateViewModel(new FakeTaskRepository([]));
+        viewModel.Goals.Add(new GoalEditItem { Text = "Старая" });
+
+        viewModel.PrepareForCreate();
+
+        Assert.Equal(3, viewModel.Goals.Count);
+        Assert.All(viewModel.Goals, g => Assert.Equal(string.Empty, g.Text));
+    }
+
+    [Fact]
+    public async Task PrepareForEditAsync_ResetsGoalsToThreeEmptySlots()
+    {
+        var existing = new TaskDb
+        {
+            Id = 12,
+            Title = "Задача",
+            DueDateUtc = TaskEditViewModel.ToDueDateUtc(DateTime.Today.AddDays(3)),
+            ProgressPercent = 0,
+            Priority = TaskPriority.Medium,
+        };
+        var viewModel = CreateViewModel(new FakeTaskRepository([existing]));
+        viewModel.Goals.Clear();
+        viewModel.Goals.Add(new GoalEditItem { Text = "A" });
+        viewModel.Goals.Add(new GoalEditItem { Text = "B" });
+
+        await viewModel.PrepareForEditAsync(12);
+
+        Assert.Equal(3, viewModel.Goals.Count);
+        Assert.All(viewModel.Goals, g => Assert.Equal(string.Empty, g.Text));
+    }
+
+    [Fact]
     public void PrepareForCreate_ClearsSubtasks()
     {
         var viewModel = CreateViewModel(new FakeTaskRepository([]));

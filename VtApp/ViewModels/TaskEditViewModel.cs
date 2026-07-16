@@ -21,6 +21,8 @@ public partial class TaskEditViewModel : ObservableObject
 
     public ObservableCollection<SubtaskEditItem> Subtasks { get; } = [];
 
+    public ObservableCollection<GoalEditItem> Goals { get; } = [];
+
     public ObservableCollection<TaskFileItem> Files { get; } = [];
 
     public IReadOnlyList<EnumOption<TaskImportance>> ImportanceOptions { get; } =
@@ -127,6 +129,7 @@ public partial class TaskEditViewModel : ObservableObject
         RecalculatePriority();
         Subtasks.Clear();
         NewSubtaskTitle = string.Empty;
+        ResetGoals();
         Files.Clear();
         NotifyFilesStateChanged();
     }
@@ -161,6 +164,7 @@ public partial class TaskEditViewModel : ObservableObject
         }
 
         NewSubtaskTitle = string.Empty;
+        ResetGoals();
 
         var files = await _taskFileService.GetFilesAsync(taskId);
         Files.Clear();
@@ -328,6 +332,14 @@ public partial class TaskEditViewModel : ObservableObject
         OnPropertyChanged(nameof(CanManageFiles));
         AddFileCommand.NotifyCanExecuteChanged();
         DeleteFileCommand.NotifyCanExecuteChanged();
+    }
+
+    private void ResetGoals()
+    {
+        Goals.Clear();
+        Goals.Add(new GoalEditItem());
+        Goals.Add(new GoalEditItem());
+        Goals.Add(new GoalEditItem());
     }
 
     public static DateTime ToDueDateUtc(DateTime localDate)

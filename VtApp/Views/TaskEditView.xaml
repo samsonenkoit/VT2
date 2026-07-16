@@ -52,7 +52,7 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
-                        <!-- Left: title + due date -->
+                        <!-- Left: title + due date + goals -->
                         <StackPanel Grid.Column="0"
                                     VerticalAlignment="Top"
                                     Margin="0,5,12,0">
@@ -64,7 +64,24 @@
                             <DatePicker SelectedDate="{Binding DueDate, Mode=TwoWay}"
                                         Style="{StaticResource MaterialDesignOutlinedDatePicker}"
                                         materialDesign:HintAssist.Hint="Срок"
-                                        Language="ru-RU" />
+                                        Language="ru-RU"
+                                        Margin="0,0,0,30" />
+
+                            <TextBlock Text="Цели"
+                                       Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                       Opacity="0.7"
+                                       Margin="0,0,0,0" />
+
+                            <ItemsControl ItemsSource="{Binding Goals}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBox Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}"
+                                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                                 materialDesign:HintAssist.Hint="Цель"
+                                                 Margin="0,8,0,0" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </StackPanel>
 
                         <!-- Center: description -->
