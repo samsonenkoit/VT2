@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>Assets\vt2.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,6 +18,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Database\Database.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\vt2.ico" />
+    <None Include="Assets\vt2-app-icon.png" />
   </ItemGroup>
 
 </Project>
