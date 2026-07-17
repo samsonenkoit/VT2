@@ -35,7 +35,7 @@ public class TaskRepositoryTests : IDisposable
             CreateTask("Удалённая", deletedAt: DateTime.UtcNow));
         await _context.SaveChangesAsync();
 
-        var active = await _repository.GetAllActiveAsync();
+        var active = await _repository.GetAllNotDeletedAsync();
 
         Assert.Single(active);
         Assert.Equal("Активная", active[0].Title);
@@ -52,7 +52,7 @@ public class TaskRepositoryTests : IDisposable
         task.ProgressPercent = 75;
         await _repository.UpdateAsync(task);
 
-        var active = await _repository.GetAllActiveAsync();
+        var active = await _repository.GetAllNotDeletedAsync();
 
         Assert.Single(active);
         Assert.Equal("Новое название", active[0].Title);
@@ -66,7 +66,7 @@ public class TaskRepositoryTests : IDisposable
         _context.Tasks.Add(task);
         await _context.SaveChangesAsync();
 
-        var found = await _repository.GetByIdAsync(task.Id);
+        var found = await _repository.GetAsync(task.Id);
 
         Assert.NotNull(found);
         Assert.Equal("Найти по Id", found.Title);
@@ -81,7 +81,7 @@ public class TaskRepositoryTests : IDisposable
 
         Assert.True(created.Id > 0);
 
-        var found = await _repository.GetByIdAsync(created.Id);
+        var found = await _repository.GetAsync(created.Id);
         Assert.NotNull(found);
         Assert.Equal("Новая задача", found.Title);
     }

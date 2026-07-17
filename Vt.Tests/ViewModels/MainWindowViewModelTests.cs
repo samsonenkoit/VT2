@@ -78,10 +78,10 @@ public class MainWindowViewModelTests
 
     private sealed class EmptyTaskRepository : ITaskRepository
     {
-        public Task<IReadOnlyList<TaskDb>> GetAllActiveAsync(CancellationToken cancellationToken = default) =>
+        public Task<IReadOnlyList<TaskDb>> GetAllNotDeletedAsync(CancellationToken cancellationToken = default) =>
             Task.FromResult<IReadOnlyList<TaskDb>>([]);
 
-        public Task<TaskDb?> GetByIdAsync(int id, CancellationToken cancellationToken = default) =>
+        public Task<TaskDb?> GetAsync(int id, CancellationToken cancellationToken = default) =>
             Task.FromResult<TaskDb?>(null);
 
         public Task<TaskDb> AddAsync(TaskDb task, CancellationToken cancellationToken = default) =>

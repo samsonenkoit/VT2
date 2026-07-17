@@ -45,7 +45,7 @@ public partial class TasksViewModel : ObservableObject
 
         try
         {
-            var tasks = await _taskRepository.GetAllActiveAsync();
+            var tasks = await _taskRepository.GetAllNotDeletedAsync();
             ClearCollections();
 
             foreach (var task in tasks)

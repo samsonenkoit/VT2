@@ -65,7 +65,7 @@ public class DatabaseInitializerTests : IDisposable
 
         await using var context = CreateContext(pathProvider.GetDatabaseFilePath());
         var repository = new TaskRepository(context);
-        var activeTasks = await repository.GetAllActiveAsync();
+        var activeTasks = await repository.GetAllNotDeletedAsync();
 
         Assert.Equal(TaskSeedData.GetSeedData().Tasks.Count, activeTasks.Count);
     }

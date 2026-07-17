@@ -159,10 +159,10 @@ public class TasksViewModelTests
 
         public FakeTaskRepository(IReadOnlyList<TaskDb> tasks) => _tasks = tasks;
 
-        public Task<IReadOnlyList<TaskDb>> GetAllActiveAsync(CancellationToken cancellationToken = default) =>
+        public Task<IReadOnlyList<TaskDb>> GetAllNotDeletedAsync(CancellationToken cancellationToken = default) =>
             Task.FromResult(_tasks);
 
-        public Task<TaskDb?> GetByIdAsync(int id, CancellationToken cancellationToken = default) =>
+        public Task<TaskDb?> GetAsync(int id, CancellationToken cancellationToken = default) =>
             Task.FromResult(_tasks.FirstOrDefault(t => t.Id == id));
 
         public Task<TaskDb> AddAsync(TaskDb task, CancellationToken cancellationToken = default) =>

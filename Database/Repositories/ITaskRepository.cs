@@ -4,9 +4,9 @@ namespace Database.Repositories;
 
 public interface ITaskRepository
 {
-    Task<IReadOnlyList<TaskDb>> GetAllActiveAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<TaskDb>> GetAllNotDeletedAsync(CancellationToken cancellationToken = default);
 
-    Task<TaskDb?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
+    Task<TaskDb?> GetAsync(int id, CancellationToken cancellationToken = default);
 
     Task<TaskDb> AddAsync(TaskDb task, CancellationToken cancellationToken = default);
 

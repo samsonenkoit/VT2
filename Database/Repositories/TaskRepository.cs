@@ -5,7 +5,7 @@ namespace Database.Repositories;
 
 public class TaskRepository(VtDbContext context) : ITaskRepository
 {
-    public async Task<IReadOnlyList<TaskDb>> GetAllActiveAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<TaskDb>> GetAllNotDeletedAsync(CancellationToken cancellationToken = default)
     {
         return await context.Tasks
             .Where(t => t.DeletedAtUtc == null)
@@ -13,7 +13,7 @@ public class TaskRepository(VtDbContext context) : ITaskRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<TaskDb?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<TaskDb?> GetAsync(int id, CancellationToken cancellationToken = default)
     {
         return await context.Tasks.FindAsync([id], cancellationToken);
     }

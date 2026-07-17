@@ -150,7 +150,7 @@ public partial class TaskEditViewModel : ObservableObject
 
     public async Task<bool> PrepareForEditAsync(int taskId)
     {
-        var task = await _taskRepository.GetByIdAsync(taskId);
+        var task = await _taskRepository.GetAsync(taskId);
         if (task is null || task.DeletedAtUtc is not null)
             return false;
 
@@ -297,7 +297,7 @@ public partial class TaskEditViewModel : ObservableObject
         }
         else
         {
-            var task = await _taskRepository.GetByIdAsync(_taskId.Value);
+            var task = await _taskRepository.GetAsync(_taskId.Value);
             if (task is null)
                 return;
 
