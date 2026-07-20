@@ -18,6 +18,7 @@ public partial class MainWindowViewModel : ObservableObject
         _tasksViewModel = tasksViewModel;
         _settingsViewModel = settingsViewModel;
         CurrentView = _tasksViewModel;
+        _ = _tasksViewModel.LoadTasksAsync();
     }
 
     partial void OnSelectedPageChanged(string value)

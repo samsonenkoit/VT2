@@ -222,6 +222,23 @@ public partial class TaskEditViewModel : ObservableObject
             ProgressPercent = clamped;
     }
 
+    private void OnSubtasksCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.OldItems is not null)
+        {
+            foreach (SubtaskEditItem item in e.OldItems)
+                item.PropertyChanged -= OnSubtaskPropertyChanged;
+        }
+
+        if (e.NewItems is not null)
+        {
+            foreach (SubtaskEditItem item in e.NewItems)
+                item.PropertyChanged += OnSubtaskPropertyChanged;
+        }
+
+        NotifySubtasksProgressChanged();
+    }
+
     #endregion
 
     private void RecalculatePriority() =>
@@ -379,23 +396,6 @@ public partial class TaskEditViewModel : ObservableObject
 
         Subtasks.Clear();
         _removedSubtaskIds.Clear();
-        NotifySubtasksProgressChanged();
-    }
-
-    private void OnSubtasksCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-    {
-        if (e.OldItems is not null)
-        {
-            foreach (SubtaskEditItem item in e.OldItems)
-                item.PropertyChanged -= OnSubtaskPropertyChanged;
-        }
-
-        if (e.NewItems is not null)
-        {
-            foreach (SubtaskEditItem item in e.NewItems)
-                item.PropertyChanged += OnSubtaskPropertyChanged;
-        }
-
         NotifySubtasksProgressChanged();
     }
 

@@ -33,8 +33,6 @@ public partial class TasksViewModel : ObservableObject
         _taskEditViewModel.Configure(
             onSaved: () => _ = ReturnToListAsync(reload: true),
             onCancelled: () => ReturnToList(reload: false));
-
-        _ = LoadTasksAsync();
     }
 
     public void ResetToBoard() => CurrentContent = this;
