@@ -10,19 +10,19 @@ namespace Vt.Tests.ViewModels;
 public class TaskEditViewModelTests
 {
     [Fact]
-    public void CanSave_IsFalseWhenTitleIsEmpty()
+    public async Task CanSave_IsFalseWhenTitleIsEmpty()
     {
         var viewModel = CreateViewModel(new FakeTaskRepository([]));
-        viewModel.PrepareForCreate();
+        await viewModel.PrepareForCreateAsync();
 
         Assert.False(viewModel.SaveCommand.CanExecute(null));
     }
 
     [Fact]
-    public void CanSave_IsTrueWhenTitleHasValue()
+    public async Task CanSave_IsTrueWhenTitleHasValue()
     {
         var viewModel = CreateViewModel(new FakeTaskRepository([]));
-        viewModel.PrepareForCreate();
+        await viewModel.PrepareForCreateAsync();
         viewModel.Title = "Задача";
 
         Assert.True(viewModel.SaveCommand.CanExecute(null));
@@ -35,7 +35,7 @@ public class TaskEditViewModelTests
         var saved = false;
         var viewModel = CreateViewModel(repository, onSaved: () => saved = true);
 
-        viewModel.PrepareForCreate();
+        await viewModel.PrepareForCreateAsync();
         viewModel.Title = "  Новая задача  ";
         viewModel.Description = "  Комментарий  ";
         await viewModel.SaveCommand.ExecuteAsync(null);
@@ -54,13 +54,15 @@ public class TaskEditViewModelTests
     }
 
     [Fact]
-    public void PrepareForCreate_SetsDueDateToTodayPlusThreeDays()
+    public async Task PrepareForCreateAsync_SetsDueDateToTodayPlusThreeDays()
     {
         var viewModel = CreateViewModel(new FakeTaskRepository([]));
 
-        viewModel.PrepareForCreate();
+        await viewModel.PrepareForCreateAsync();
 
         Assert.Equal(DateTime.Today.AddDays(3), viewModel.DueDate);
+        Assert.False(viewModel.IsLoading);
+        Assert.True(viewModel.IsUiEnabled);
     }
 
     [Fact]
@@ -121,7 +123,7 @@ public class TaskEditViewModelTests
         var repository = new FakeTaskRepository([]);
         var viewModel = CreateViewModel(repository);
 
-        viewModel.PrepareForCreate();
+        await viewModel.PrepareForCreateAsync();
         viewModel.Title = "Срочная";
         viewModel.Importance = TaskImportance.High;
         viewModel.Urgency = TaskUrgency.High;
@@ -135,10 +137,10 @@ public class TaskEditViewModelTests
     }
 
     [Fact]
-    public void ChangingFactors_RecalculatesPriority()
+    public async Task ChangingFactors_RecalculatesPriority()
     {
         var viewModel = CreateViewModel(new FakeTaskRepository([]));
-        viewModel.PrepareForCreate();
+        await viewModel.PrepareForCreateAsync();
 
         viewModel.Importance = TaskImportance.Critical;
         viewModel.Urgency = TaskUrgency.High;
@@ -219,6 +221,8 @@ public class TaskEditViewModelTests
 
         Assert.True(prepared);
         Assert.True(viewModel.IsEditMode);
+        Assert.False(viewModel.IsLoading);
+        Assert.True(viewModel.IsUiEnabled);
         Assert.Equal("Редактируемая", viewModel.Title);
         Assert.Equal("Редактирование задачи", viewModel.PageTitle);
         Assert.Equal(TaskImportance.High, viewModel.Importance);
@@ -257,11 +261,11 @@ public class TaskEditViewModelTests
     }
 
     [Fact]
-    public void AddSubtaskCommand_AddsToCollection()
+    public async Task AddSubtaskCommand_AddsToCollection()
     {
         var subtaskRepository = new FakeSubtaskRepository([]);
         var viewModel = CreateViewModel(new FakeTaskRepository([]), subtaskRepository);
-        viewModel.PrepareForCreate();
+        await viewModel.PrepareForCreateAsync();
         viewModel.NewSubtaskDescription = "  Новая подзадача  ";
 
         viewModel.AddSubtaskCommand.Execute(null);
@@ -316,7 +320,7 @@ public class TaskEditViewModelTests
         var subtaskRepository = new FakeSubtaskRepository([]);
         var viewModel = CreateViewModel(taskRepository, subtaskRepository);
 
-        viewModel.PrepareForCreate();
+        await viewModel.PrepareForCreateAsync();
         viewModel.Title = "Задача";
         viewModel.Subtasks.Add(new SubtaskEditItem { Description = "Шаг 1" });
         viewModel.Subtasks.Add(new SubtaskEditItem { Description = "Шаг 2" });
@@ -360,13 +364,14 @@ public class TaskEditViewModelTests
     }
 
     [Fact]
-    public void PrepareForCreate_DisablesFileManagement()
+    public async Task PrepareForCreateAsync_DisablesFileManagement()
     {
         var viewModel = CreateViewModel(new FakeTaskRepository([]));
-        viewModel.PrepareForCreate();
+        await viewModel.PrepareForCreateAsync();
 
         Assert.False(viewModel.CanManageFiles);
         Assert.False(viewModel.AddFileCommand.CanExecute(null));
+        Assert.False(viewModel.IsLoading);
     }
 
     [Fact]
@@ -417,12 +422,12 @@ public class TaskEditViewModelTests
     }
 
     [Fact]
-    public void PrepareForCreate_ResetsGoalsToThreeEmptySlots()
+    public async Task PrepareForCreateAsync_ResetsGoalsToThreeEmptySlots()
     {
         var viewModel = CreateViewModel(new FakeTaskRepository([]));
         viewModel.Goals.Add(new GoalEditItem { Text = "Старая" });
 
-        viewModel.PrepareForCreate();
+        await viewModel.PrepareForCreateAsync();
 
         Assert.Equal(3, viewModel.Goals.Count);
         Assert.All(viewModel.Goals, g => Assert.Equal(string.Empty, g.Text));
@@ -451,13 +456,13 @@ public class TaskEditViewModelTests
     }
 
     [Fact]
-    public void PrepareForCreate_ClearsSubtasks()
+    public async Task PrepareForCreateAsync_ClearsSubtasks()
     {
         var viewModel = CreateViewModel(new FakeTaskRepository([]));
         viewModel.Subtasks.Add(new SubtaskEditItem { Description = "Остаток" });
         viewModel.NewSubtaskDescription = "Черновик";
 
-        viewModel.PrepareForCreate();
+        await viewModel.PrepareForCreateAsync();
 
         Assert.Empty(viewModel.Subtasks);
         Assert.Equal(string.Empty, viewModel.NewSubtaskDescription);
@@ -472,7 +477,7 @@ public class TaskEditViewModelTests
         var viewModel = CreateViewModel(taskRepository, subtaskRepository);
         var due = new DateTime(2026, 8, 1);
 
-        viewModel.PrepareForCreate();
+        await viewModel.PrepareForCreateAsync();
         viewModel.Title = "Задача";
         viewModel.Subtasks.Add(new SubtaskEditItem
         {
@@ -533,10 +538,10 @@ public class TaskEditViewModelTests
     }
 
     [Fact]
-    public void SubtasksProgressLabel_UpdatesWhenProgressChanges()
+    public async Task SubtasksProgressLabel_UpdatesWhenProgressChanges()
     {
         var viewModel = CreateViewModel(new FakeTaskRepository([]));
-        viewModel.PrepareForCreate();
+        await viewModel.PrepareForCreateAsync();
         viewModel.Subtasks.Add(new SubtaskEditItem { Description = "A", ProgressPercent = 0 });
         viewModel.Subtasks.Add(new SubtaskEditItem { Description = "B", ProgressPercent = 100 });
 

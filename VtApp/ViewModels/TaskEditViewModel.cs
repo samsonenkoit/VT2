@@ -79,6 +79,12 @@ public partial class TaskEditViewModel : ObservableObject
     private bool _isEditMode;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsUiEnabled))]
+    private bool _isLoading;
+
+    public bool IsUiEnabled => !IsLoading;
+
+    [ObservableProperty]
     private TaskImportance _importance = TaskImportance.Medium;
 
     [ObservableProperty]
@@ -132,67 +138,85 @@ public partial class TaskEditViewModel : ObservableObject
         _onCancelled = onCancelled;
     }
 
-    public void PrepareForCreate()
+    public async Task PrepareForCreateAsync()
     {
-        _taskId = null;
-        IsEditMode = false;
-        Title = string.Empty;
-        Description = string.Empty;
-        DueDate = DateTime.Today.AddDays(3);
-        Importance = TaskImportance.Medium;
-        DelayRisk = TaskDelayRisk.Low;
-        Difficulty = TaskDifficulty.Low;
-        Urgency = TaskUrgency.Medium;
-        ProgressPercent = 0;
-        RecalculatePriority();
-        ClearSubtasks();
-        NewSubtaskDescription = string.Empty;
-        ResetGoals();
-        Files.Clear();
-        NotifyFilesStateChanged();
+        IsLoading = true;
+        try
+        {
+            await Task.Yield();
+
+            _taskId = null;
+            IsEditMode = false;
+            Title = string.Empty;
+            Description = string.Empty;
+            DueDate = DateTime.Today.AddDays(3);
+            Importance = TaskImportance.Medium;
+            DelayRisk = TaskDelayRisk.Low;
+            Difficulty = TaskDifficulty.Low;
+            Urgency = TaskUrgency.Medium;
+            ProgressPercent = 0;
+            RecalculatePriority();
+            ClearSubtasks();
+            NewSubtaskDescription = string.Empty;
+            ResetGoals();
+            Files.Clear();
+            NotifyFilesStateChanged();
+        }
+        finally
+        {
+            IsLoading = false;
+        }
     }
 
     public async Task<bool> PrepareForEditAsync(int taskId)
     {
-        var task = await _taskRepository.GetAsync(taskId);
-        if (task is null || task.DeletedAtUtc is not null)
-            return false;
-
-        _taskId = taskId;
-        IsEditMode = true;
-        Title = task.Title;
-        Description = task.Description;
-        DueDate = ToDueDateLocal(task.DueDateUtc);
-        Importance = task.Importance;
-        DelayRisk = task.DelayRisk;
-        Difficulty = task.Difficulty;
-        Urgency = task.Urgency;
-        ProgressPercent = task.ProgressPercent;
-        RecalculatePriority();
-
-        ClearSubtasks();
-        var subtasks = await _subtaskRepository.GetNotDeletedAsync(taskId);
-        foreach (var subtask in subtasks)
+        IsLoading = true;
+        try
         {
-            Subtasks.Add(new SubtaskEditItem
+            var task = await _taskRepository.GetAsync(taskId);
+            if (task is null || task.DeletedAtUtc is not null)
+                return false;
+
+            _taskId = taskId;
+            IsEditMode = true;
+            Title = task.Title;
+            Description = task.Description;
+            DueDate = ToDueDateLocal(task.DueDateUtc);
+            Importance = task.Importance;
+            DelayRisk = task.DelayRisk;
+            Difficulty = task.Difficulty;
+            Urgency = task.Urgency;
+            ProgressPercent = task.ProgressPercent;
+            RecalculatePriority();
+
+            ClearSubtasks();
+            var subtasks = await _subtaskRepository.GetNotDeletedAsync(taskId);
+            foreach (var subtask in subtasks)
             {
-                Id = subtask.Id,
-                Description = subtask.Description,
-                DueDate = ToDueDateLocal(subtask.DueDateUtc),
-                ProgressPercent = SubtaskProgressOptions.Normalize(subtask.ProgressPercent),
-            });
+                Subtasks.Add(new SubtaskEditItem
+                {
+                    Id = subtask.Id,
+                    Description = subtask.Description,
+                    DueDate = ToDueDateLocal(subtask.DueDateUtc),
+                    ProgressPercent = SubtaskProgressOptions.Normalize(subtask.ProgressPercent),
+                });
+            }
+
+            NewSubtaskDescription = string.Empty;
+            ResetGoals();
+
+            var files = await _taskFileService.GetFilesAsync(taskId);
+            Files.Clear();
+            foreach (var file in files)
+                Files.Add(file);
+
+            NotifyFilesStateChanged();
+            return true;
         }
-
-        NewSubtaskDescription = string.Empty;
-        ResetGoals();
-
-        var files = await _taskFileService.GetFilesAsync(taskId);
-        Files.Clear();
-        foreach (var file in files)
-            Files.Add(file);
-
-        NotifyFilesStateChanged();
-        return true;
+        finally
+        {
+            IsLoading = false;
+        }
     }
 
     #region handlers

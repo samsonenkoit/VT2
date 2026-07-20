@@ -56,21 +56,21 @@ public partial class TasksViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void AddTask()
+    private async Task AddTaskAsync()
     {
-        _taskEditViewModel.PrepareForCreate();
         CurrentContent = _taskEditViewModel;
+        await _taskEditViewModel.PrepareForCreateAsync();
     }
 
     [RelayCommand]
-    private async Task EditTask(TaskItem task) => await OpenEditAsync(task.Id);
+    private Task EditTask(TaskItem task) => OpenEditAsync(task.Id);
 
     private async Task OpenEditAsync(int taskId)
     {
-        if (!await _taskEditViewModel.PrepareForEditAsync(taskId))
-            return;
-
         CurrentContent = _taskEditViewModel;
+
+        if (!await _taskEditViewModel.PrepareForEditAsync(taskId))
+            CurrentContent = this;
     }
 
     private void ReturnToList(bool reload)

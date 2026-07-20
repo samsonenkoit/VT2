@@ -49,10 +49,10 @@ public class MainWindowViewModelTests
     }
 
     [Fact]
-    public void SelectedPage_WhenChangedToSettings_ResetsTasksNavigation()
+    public async Task SelectedPage_WhenChangedToSettings_ResetsTasksNavigation()
     {
         var tasksViewModel = CreateTasksViewModel();
-        tasksViewModel.AddTaskCommand.Execute(null);
+        await tasksViewModel.AddTaskCommand.ExecuteAsync(null);
 
         var viewModel = new MainWindowViewModel(tasksViewModel, new SettingsViewModel());
         viewModel.SelectedPage = "Settings";

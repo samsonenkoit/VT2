@@ -11,6 +11,7 @@
              d:DesignHeight="600"
              d:DesignWidth="1000">
     <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:EnumToIntConverter x:Key="EnumToIntConverter" />
         <converters:TaskPriorityToBrushConverter x:Key="TaskPriorityToBrushConverter" />
         <converters:ProgressAtLeastConverter x:Key="ProgressAtLeastConverter" />
@@ -31,7 +32,8 @@
     </UserControl.Resources>
     <Grid>
         <TabControl HorizontalContentAlignment="Left"
-                    Style="{StaticResource MaterialDesignFilledTabControl}">
+                    Style="{StaticResource MaterialDesignFilledTabControl}"
+                    IsEnabled="{Binding IsUiEnabled}">
             <TabControl.Resources>
                 <Style TargetType="{x:Type TabPanel}">
                     <Setter Property="HorizontalAlignment" Value="Left" />
@@ -477,5 +479,13 @@
                 </ScrollViewer>
             </TabItem>
         </TabControl>
+
+        <Border Background="#80FFFFFF"
+                Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
+                         IsIndeterminate="True"
+                         Width="48"
+                         Height="48" />
+        </Border>
     </Grid>
 </UserControl>

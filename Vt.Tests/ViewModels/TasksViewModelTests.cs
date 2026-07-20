@@ -1,5 +1,6 @@
 using Database.Models;
 using Database.Repositories;
+using VtApp.Models;
 using VtApp.Services;
 using VtApp.ViewModels;
 using Xunit;
@@ -61,15 +62,16 @@ public class TasksViewModelTests
     }
 
     [Fact]
-    public void AddTask_SetsCurrentContentToEditViewModel()
+    public async Task AddTask_SetsCurrentContentToEditViewModel()
     {
         var viewModel = CreateViewModel(new FakeTaskRepository([]));
 
-        viewModel.AddTaskCommand.Execute(null);
+        await viewModel.AddTaskCommand.ExecuteAsync(null);
 
         Assert.IsType<TaskEditViewModel>(viewModel.CurrentContent);
         var editViewModel = (TaskEditViewModel)viewModel.CurrentContent;
         Assert.False(editViewModel.IsEditMode);
+        Assert.False(editViewModel.IsLoading);
     }
 
     [Fact]
@@ -92,10 +94,20 @@ public class TasksViewModelTests
     }
 
     [Fact]
-    public void ResetToBoard_SetsCurrentContentToTasksViewModel()
+    public async Task EditTask_WhenTaskMissing_ReturnsToBoard()
     {
         var viewModel = CreateViewModel(new FakeTaskRepository([]));
-        viewModel.AddTaskCommand.Execute(null);
+
+        await viewModel.EditTaskCommand.ExecuteAsync(new TaskItem { Id = 99, Title = "Нет" });
+
+        Assert.Same(viewModel, viewModel.CurrentContent);
+    }
+
+    [Fact]
+    public async Task ResetToBoard_SetsCurrentContentToTasksViewModel()
+    {
+        var viewModel = CreateViewModel(new FakeTaskRepository([]));
+        await viewModel.AddTaskCommand.ExecuteAsync(null);
 
         viewModel.ResetToBoard();
 
