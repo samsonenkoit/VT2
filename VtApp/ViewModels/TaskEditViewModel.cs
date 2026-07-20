@@ -17,11 +17,13 @@ public partial class TaskEditViewModel : ObservableObject
     private readonly ITaskRepository _taskRepository;
     private readonly ISubtaskRepository _subtaskRepository;
     private readonly ITaskFileService _taskFileService;
+
     private readonly List<int> _removedSubtaskIds = [];
     private Action? _onSaved;
     private Action? _onCancelled;
     private int? _taskId;
 
+    #region properties
     public ObservableCollection<SubtaskEditItem> Subtasks { get; } = [];
 
     public ObservableCollection<GoalEditItem> Goals { get; } = [];
@@ -111,6 +113,8 @@ public partial class TaskEditViewModel : ObservableObject
         }
     }
 
+    #endregion
+
     public TaskEditViewModel(
         ITaskRepository taskRepository,
         ISubtaskRepository subtaskRepository,
@@ -191,6 +195,7 @@ public partial class TaskEditViewModel : ObservableObject
         return true;
     }
 
+    #region handlers
     partial void OnIsEditModeChanged(bool value) => OnPropertyChanged(nameof(PageTitle));
 
     partial void OnImportanceChanged(TaskImportance value) => RecalculatePriority();
@@ -217,10 +222,12 @@ public partial class TaskEditViewModel : ObservableObject
             ProgressPercent = clamped;
     }
 
+    #endregion
+
     private void RecalculatePriority() =>
         Priority = PriorityCalculator.Calculate(Importance, DelayRisk, Difficulty, Urgency);
 
-    private bool CanSave() => !string.IsNullOrWhiteSpace(Title);
+    #region commands
 
     private bool CanAddSubtask() => !string.IsNullOrWhiteSpace(NewSubtaskDescription);
 
@@ -271,6 +278,9 @@ public partial class TaskEditViewModel : ObservableObject
         Files.Remove(file);
     }
 
+    #region save task commnad
+    private bool CanSave() => !string.IsNullOrWhiteSpace(Title);
+
     [RelayCommand(CanExecute = nameof(CanSave))]
     private async Task SaveAsync()
     {
@@ -317,6 +327,8 @@ public partial class TaskEditViewModel : ObservableObject
         _onSaved?.Invoke();
     }
 
+    #endregion
+
     [RelayCommand]
     private void Cancel() => _onCancelled?.Invoke();
 
@@ -357,6 +369,8 @@ public partial class TaskEditViewModel : ObservableObject
             }
         }
     }
+
+    #endregion
 
     private void ClearSubtasks()
     {
