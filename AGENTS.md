@@ -31,8 +31,8 @@ VT2/
 │   ├── ViewModels/
 │   └── Views/                # TasksView, TaskEditView, SettingsView
 ├── Database/                 # EF Core data layer (fully implemented)
-│   ├── Models/               # TaskDb, SubtaskDb, TaskFileDb + factor/priority enums
-│   ├── Repositories/         # Task / Subtask / TaskFile repositories
+│   ├── Models/               # TaskDb, SubtaskDb, TaskFileDb, GoalDb + factor/priority enums
+│   ├── Repositories/         # Task / Subtask / TaskFile / Goal repositories
 │   ├── Services/             # PriorityCalculator
 │   ├── Seed/                 # TaskSeedData
 │   ├── VtDbContext.cs
@@ -91,7 +91,7 @@ VT2/
 | Factors | Yes | Importance, Urgency, Difficulty, DelayRisk — edited with `LevelBar` |
 | Subtasks | Yes (`SubtaskDb`) | Description, due date, progress; checklist UI on edit page |
 | Files | Yes (`TaskFileDb` + filesystem) | Tab on edit page when task is saved |
-| Goals | **No** | UI-only (`GoalEditItem`); three empty slots, not saved |
+| Goals | Yes (`GoalDb`) | До 3 слотов на задаче; в БД только непустой текст; порядок в UI по `Id` |
 | Settings | — | Placeholder page |
 
 ## Development Conventions

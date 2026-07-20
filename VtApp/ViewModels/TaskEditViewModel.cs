@@ -16,6 +16,7 @@ public partial class TaskEditViewModel : ObservableObject
 {
     private readonly ITaskRepository _taskRepository;
     private readonly ISubtaskRepository _subtaskRepository;
+    private readonly IGoalRepository _goalRepository;
     private readonly ITaskFileService _taskFileService;
 
     private readonly List<int> _removedSubtaskIds = [];
@@ -124,10 +125,12 @@ public partial class TaskEditViewModel : ObservableObject
     public TaskEditViewModel(
         ITaskRepository taskRepository,
         ISubtaskRepository subtaskRepository,
+        IGoalRepository goalRepository,
         ITaskFileService taskFileService)
     {
         _taskRepository = taskRepository;
         _subtaskRepository = subtaskRepository;
+        _goalRepository = goalRepository;
         _taskFileService = taskFileService;
         Subtasks.CollectionChanged += OnSubtasksCollectionChanged;
     }
@@ -203,7 +206,7 @@ public partial class TaskEditViewModel : ObservableObject
             }
 
             NewSubtaskDescription = string.Empty;
-            ResetGoals();
+            await LoadGoalsAsync(taskId);
 
             var files = await _taskFileService.GetFilesAsync(taskId);
             Files.Clear();
@@ -345,6 +348,7 @@ public partial class TaskEditViewModel : ObservableObject
             });
 
             await SaveSubtasksAsync(task.Id);
+            await SaveGoalsAsync(task.Id);
         }
         else
         {
@@ -363,6 +367,7 @@ public partial class TaskEditViewModel : ObservableObject
             task.ProgressPercent = ProgressPercent;
             await _taskRepository.UpdateAsync(task);
             await SaveSubtasksAsync(task.Id);
+            await SaveGoalsAsync(task.Id);
         }
 
         _onSaved?.Invoke();
@@ -411,6 +416,43 @@ public partial class TaskEditViewModel : ObservableObject
         }
     }
 
+    private async Task SaveGoalsAsync(int taskId)
+    {
+        for (var i = 0; i < Goals.Count && i < 3; i++)
+        {
+            var goal = Goals[i];
+            var trimmed = goal.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(trimmed))
+            {
+                if (goal.Id != 0)
+                    await _goalRepository.SoftDeleteAsync(goal.Id);
+                continue;
+            }
+
+            if (goal.Id == 0)
+            {
+                var added = await _goalRepository.AddAsync(new GoalDb
+                {
+                    TaskId = taskId,
+                    Text = trimmed,
+                });
+                goal.Id = added.Id;
+                goal.Text = trimmed;
+            }
+            else
+            {
+                await _goalRepository.UpdateAsync(new GoalDb
+                {
+                    Id = goal.Id,
+                    TaskId = taskId,
+                    Text = trimmed,
+                });
+                goal.Text = trimmed;
+            }
+        }
+    }
+
     #endregion
 
     private void ClearSubtasks()
@@ -451,12 +493,22 @@ public partial class TaskEditViewModel : ObservableObject
         DeleteFileCommand.NotifyCanExecuteChanged();
     }
 
-    private void ResetGoals()
+    private async Task LoadGoalsAsync(int taskId)
+    {
+        var goals = await _goalRepository.GetNotDeletedAsync(taskId);
+        ApplyGoals(goals);
+    }
+
+    private void ResetGoals() => ApplyGoals([]);
+
+    private void ApplyGoals(IReadOnlyList<GoalDb> goals)
     {
         Goals.Clear();
-        Goals.Add(new GoalEditItem());
-        Goals.Add(new GoalEditItem());
-        Goals.Add(new GoalEditItem());
+        foreach (var goal in goals.OrderBy(g => g.Id).Take(3))
+            Goals.Add(new GoalEditItem { Id = goal.Id, Text = goal.Text });
+
+        while (Goals.Count < 3)
+            Goals.Add(new GoalEditItem());
     }
 
     public static DateTime ToDueDateUtc(DateTime localDate)

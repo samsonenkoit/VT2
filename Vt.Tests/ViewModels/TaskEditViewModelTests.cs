@@ -434,7 +434,7 @@ public class TaskEditViewModelTests
     }
 
     [Fact]
-    public async Task PrepareForEditAsync_ResetsGoalsToThreeEmptySlots()
+    public async Task PrepareForEditAsync_LoadsGoalsOrderedById()
     {
         var existing = new TaskDb
         {
@@ -444,15 +444,65 @@ public class TaskEditViewModelTests
             ProgressPercent = 0,
             Priority = TaskPriority.Medium,
         };
-        var viewModel = CreateViewModel(new FakeTaskRepository([existing]));
-        viewModel.Goals.Clear();
-        viewModel.Goals.Add(new GoalEditItem { Text = "A" });
-        viewModel.Goals.Add(new GoalEditItem { Text = "B" });
+        var goalRepository = new FakeGoalRepository(
+        [
+            new GoalDb { Id = 20, TaskId = 12, Text = "Вторая" },
+            new GoalDb { Id = 10, TaskId = 12, Text = "Первая" },
+        ]);
+        var viewModel = CreateViewModel(new FakeTaskRepository([existing]), goalRepository: goalRepository);
 
         await viewModel.PrepareForEditAsync(12);
 
         Assert.Equal(3, viewModel.Goals.Count);
-        Assert.All(viewModel.Goals, g => Assert.Equal(string.Empty, g.Text));
+        Assert.Equal("Первая", viewModel.Goals[0].Text);
+        Assert.Equal(10, viewModel.Goals[0].Id);
+        Assert.Equal("Вторая", viewModel.Goals[1].Text);
+        Assert.Equal(20, viewModel.Goals[1].Id);
+        Assert.Equal(string.Empty, viewModel.Goals[2].Text);
+        Assert.Equal(0, viewModel.Goals[2].Id);
+    }
+
+    [Fact]
+    public async Task SaveAsync_Create_PersistsOnlyNonEmptyGoals()
+    {
+        var taskRepository = new FakeTaskRepository([]);
+        var goalRepository = new FakeGoalRepository([]);
+        var viewModel = CreateViewModel(taskRepository, goalRepository: goalRepository);
+
+        await viewModel.PrepareForCreateAsync();
+        viewModel.Title = "Задача";
+        viewModel.Goals[0].Text = "  Цель A  ";
+        viewModel.Goals[1].Text = "   ";
+        viewModel.Goals[2].Text = "Цель C";
+        await viewModel.SaveCommand.ExecuteAsync(null);
+
+        Assert.Equal(2, goalRepository.AddedGoals.Count);
+        Assert.Equal("Цель A", goalRepository.AddedGoals[0].Text);
+        Assert.Equal("Цель C", goalRepository.AddedGoals[1].Text);
+    }
+
+    [Fact]
+    public async Task SaveAsync_Edit_SoftDeletesClearedGoal()
+    {
+        var task = new TaskDb
+        {
+            Id = 5,
+            Title = "Задача",
+            DueDateUtc = TaskEditViewModel.ToDueDateUtc(DateTime.Today.AddDays(3)),
+            ProgressPercent = 0,
+            Priority = TaskPriority.Medium,
+        };
+        var goalRepository = new FakeGoalRepository(
+        [
+            new GoalDb { Id = 7, TaskId = 5, Text = "Старая" },
+        ]);
+        var viewModel = CreateViewModel(new FakeTaskRepository([task]), goalRepository: goalRepository);
+
+        await viewModel.PrepareForEditAsync(5);
+        viewModel.Goals[0].Text = string.Empty;
+        await viewModel.SaveCommand.ExecuteAsync(null);
+
+        Assert.Contains(7, goalRepository.SoftDeletedIds);
     }
 
     [Fact]
@@ -554,6 +604,7 @@ public class TaskEditViewModelTests
     private static TaskEditViewModel CreateViewModel(
         FakeTaskRepository repository,
         FakeSubtaskRepository? subtaskRepository = null,
+        FakeGoalRepository? goalRepository = null,
         FakeTaskFileService? fileService = null,
         Action? onSaved = null,
         Action? onCancelled = null)
@@ -561,6 +612,7 @@ public class TaskEditViewModelTests
         var viewModel = new TaskEditViewModel(
             repository,
             subtaskRepository ?? new FakeSubtaskRepository([]),
+            goalRepository ?? new FakeGoalRepository([]),
             fileService ?? new FakeTaskFileService([]));
         viewModel.Configure(
             onSaved ?? (() => { }),
@@ -613,6 +665,38 @@ public class TaskEditViewModelTests
         public Task UpdateAsync(SubtaskDb subtask, CancellationToken cancellationToken = default)
         {
             UpdatedSubtasks.Add(subtask);
+            return Task.CompletedTask;
+        }
+
+        public Task SoftDeleteAsync(int id, CancellationToken cancellationToken = default)
+        {
+            SoftDeletedIds.Add(id);
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class FakeGoalRepository(IReadOnlyList<GoalDb> goals) : IGoalRepository
+    {
+        public List<GoalDb> AddedGoals { get; } = [];
+        public List<GoalDb> UpdatedGoals { get; } = [];
+        public List<int> SoftDeletedIds { get; } = [];
+
+        public Task<IReadOnlyList<GoalDb>> GetNotDeletedAsync(int taskId, CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<GoalDb>>(
+                goals
+                    .Where(g => g.TaskId == taskId && g.DeletedAtUtc is null && !SoftDeletedIds.Contains(g.Id))
+                    .ToList());
+
+        public Task<GoalDb> AddAsync(GoalDb goal, CancellationToken cancellationToken = default)
+        {
+            goal.Id = goals.Count + AddedGoals.Count + 1;
+            AddedGoals.Add(goal);
+            return Task.FromResult(goal);
+        }
+
+        public Task UpdateAsync(GoalDb goal, CancellationToken cancellationToken = default)
+        {
+            UpdatedGoals.Add(goal);
             return Task.CompletedTask;
         }
 

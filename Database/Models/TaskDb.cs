@@ -25,4 +25,6 @@ public class TaskDb
     public DateTime? DeletedAtUtc { get; set; }
 
     public ICollection<SubtaskDb> Subtasks { get; set; } = [];
+
+    public ICollection<GoalDb> Goals { get; set; } = [];
 }

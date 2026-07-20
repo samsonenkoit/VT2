@@ -5,7 +5,7 @@ namespace Database.Seed;
 
 public static class TaskSeedData
 {
-    public static (IReadOnlyList<TaskDb> Tasks, IReadOnlyList<SubtaskDb> Subtasks) GetSeedData()
+    public static (IReadOnlyList<TaskDb> Tasks, IReadOnlyList<SubtaskDb> Subtasks, IReadOnlyList<GoalDb> Goals) GetSeedData()
     {
         var tasks = new List<TaskDb>
         {
@@ -155,7 +155,15 @@ public static class TaskSeedData
             new() { Description = "Исправить расчёт итоговой строки", TaskId = 2 },
         };
 
-        return (tasks, subtasks);
+        var goals = new List<GoalDb>
+        {
+            new() { TaskId = 1, Text = "Подписать договор до конца недели" },
+            new() { TaskId = 1, Text = "Сохранить условия поставки" },
+            new() { TaskId = 2, Text = "Вернуть корректный отчёт пользователям" },
+            new() { TaskId = 2, Text = "Исключить регрессию в итогах" },
+        };
+
+        return (tasks, subtasks, goals);
     }
 
     private static TaskDb CreateTask(

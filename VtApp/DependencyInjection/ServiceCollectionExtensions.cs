@@ -19,6 +19,7 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<ITaskRepository, TaskRepository>();
         services.AddScoped<ISubtaskRepository, SubtaskRepository>();
+        services.AddScoped<IGoalRepository, GoalRepository>();
         services.AddScoped<ITaskFileRepository, TaskFileRepository>();
         services.AddScoped<ITaskFileService, TaskFileService>();
         services.AddTransient<TaskEditViewModel>();

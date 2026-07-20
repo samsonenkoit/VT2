@@ -19,9 +19,10 @@ public sealed class DatabaseInitializer(IAppDataPathProvider pathProvider)
         context.Database.EnsureDeleted();
         context.Database.EnsureCreated();
 
-        var (tasks, subtasks) = TaskSeedData.GetSeedData();
+        var (tasks, subtasks, goals) = TaskSeedData.GetSeedData();
         context.Tasks.AddRange(tasks);
         context.Subtasks.AddRange(subtasks);
+        context.Goals.AddRange(goals);
         context.SaveChanges();
     }
 

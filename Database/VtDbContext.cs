@@ -11,6 +11,8 @@ public class VtDbContext(DbContextOptions<VtDbContext> options) : DbContext(opti
 
     public DbSet<TaskFileDb> TaskFiles => Set<TaskFileDb>();
 
+    public DbSet<GoalDb> Goals => Set<GoalDb>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<TaskDb>(entity =>
@@ -27,6 +29,11 @@ public class VtDbContext(DbContextOptions<VtDbContext> options) : DbContext(opti
             entity.HasMany(t => t.Subtasks)
                 .WithOne(s => s.Task)
                 .HasForeignKey(s => s.TaskId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasMany(t => t.Goals)
+                .WithOne(g => g.Task)
+                .HasForeignKey(g => g.TaskId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
@@ -46,6 +53,12 @@ public class VtDbContext(DbContextOptions<VtDbContext> options) : DbContext(opti
                 .WithMany()
                 .HasForeignKey(f => f.TaskId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<GoalDb>(entity =>
+        {
+            entity.HasKey(g => g.Id);
+            entity.Property(g => g.Text).IsRequired().HasMaxLength(500);
         });
     }
 }

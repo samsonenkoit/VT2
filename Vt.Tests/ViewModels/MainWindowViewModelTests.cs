@@ -73,6 +73,7 @@ public class MainWindowViewModelTests
             new TaskEditViewModel(
                 repository,
                 new EmptySubtaskRepository(),
+                new EmptyGoalRepository(),
                 new EmptyTaskFileService()));
     }
 
@@ -112,6 +113,21 @@ public class MainWindowViewModelTests
             Task.FromResult(subtask);
 
         public Task UpdateAsync(SubtaskDb subtask, CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
+
+        public Task SoftDeleteAsync(int id, CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
+    }
+
+    private sealed class EmptyGoalRepository : IGoalRepository
+    {
+        public Task<IReadOnlyList<GoalDb>> GetNotDeletedAsync(int taskId, CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<GoalDb>>([]);
+
+        public Task<GoalDb> AddAsync(GoalDb goal, CancellationToken cancellationToken = default) =>
+            Task.FromResult(goal);
+
+        public Task UpdateAsync(GoalDb goal, CancellationToken cancellationToken = default) =>
             Task.CompletedTask;
 
         public Task SoftDeleteAsync(int id, CancellationToken cancellationToken = default) =>

@@ -41,6 +41,7 @@ public class DatabaseInitializerTests : IDisposable
 
         using (var context = CreateContext(pathProvider.GetDatabaseFilePath()))
         {
+            context.Goals.RemoveRange(context.Goals);
             context.Subtasks.RemoveRange(context.Subtasks);
             context.Tasks.RemoveRange(context.Tasks);
             context.SaveChanges();
