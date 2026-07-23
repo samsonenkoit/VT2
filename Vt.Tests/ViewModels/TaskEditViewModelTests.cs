@@ -721,5 +721,9 @@ public class TaskEditViewModelTests
             DeletedFiles.Add((taskId, fileName));
             return Task.CompletedTask;
         }
+
+        public void OpenFile(int taskId, string fileName)
+        {
+        }
     }
 }

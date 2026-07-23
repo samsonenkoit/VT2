@@ -1,6 +1,8 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.IO;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Database.Models;
@@ -324,6 +326,27 @@ public partial class TaskEditViewModel : ObservableObject
         Files.Remove(file);
     }
 
+    [RelayCommand(CanExecute = nameof(CanAddFile))]
+    private void OpenFile(TaskFileItem? file)
+    {
+        if (_taskId is null || file is null)
+            return;
+
+        try
+        {
+            _taskFileService.OpenFile(_taskId.Value, file.FileName);
+        }
+        catch (FileNotFoundException ex)
+        {
+            MessageBox.Show(ex.Message, "Файлы", MessageBoxButton.OK, MessageBoxImage.Warning);
+            Files.Remove(file);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Файлы", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
     #region save task commnad
     private bool CanSave() => !string.IsNullOrWhiteSpace(Title);
 
@@ -483,6 +506,7 @@ public partial class TaskEditViewModel : ObservableObject
         OnPropertyChanged(nameof(CanManageFiles));
         AddFileCommand.NotifyCanExecuteChanged();
         DeleteFileCommand.NotifyCanExecuteChanged();
+        OpenFileCommand.NotifyCanExecuteChanged();
     }
 
     private async Task LoadGoalsAsync(int taskId)

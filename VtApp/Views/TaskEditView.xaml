@@ -457,10 +457,17 @@
                                                                  VerticalAlignment="Center"
                                                                  Margin="0,0,8,0" />
 
-                                        <TextBlock Grid.Column="1"
-                                                   Text="{Binding FileName}"
-                                                   VerticalAlignment="Center"
-                                                   TextTrimming="CharacterEllipsis" />
+                                        <Button Grid.Column="1"
+                                                Style="{StaticResource MaterialDesignFlatButton}"
+                                                HorizontalAlignment="Stretch"
+                                                HorizontalContentAlignment="Left"
+                                                Padding="0"
+                                                ToolTip="Открыть"
+                                                Command="{Binding DataContext.OpenFileCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}">
+                                            <TextBlock Text="{Binding FileName}"
+                                                       TextTrimming="CharacterEllipsis" />
+                                        </Button>
 
                                         <Button Grid.Column="2"
                                                 Style="{StaticResource MaterialDesignIconButton}"

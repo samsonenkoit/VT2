@@ -149,6 +149,10 @@ public class TasksViewModelTests
 
         public Task DeleteFileAsync(int taskId, string fileName, CancellationToken cancellationToken = default) =>
             Task.CompletedTask;
+
+        public void OpenFile(int taskId, string fileName)
+        {
+        }
     }
 
     private sealed class EmptySubtaskRepository : ISubtaskRepository

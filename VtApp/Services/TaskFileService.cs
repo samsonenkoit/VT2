@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO;
 using Database;
 using VtApp.Models;
@@ -62,6 +63,22 @@ public sealed class TaskFileService(IAppDataPathProvider pathProvider) : ITaskFi
             File.Delete(filePath);
 
         return Task.CompletedTask;
+    }
+
+    public void OpenFile(int taskId, string fileName)
+    {
+        if (string.IsNullOrWhiteSpace(fileName))
+            throw new FileNotFoundException("Файл не найден.");
+
+        var filePath = Path.Combine(pathProvider.GetTaskFilesDirectory(taskId), fileName);
+        if (!File.Exists(filePath))
+            throw new FileNotFoundException("Файл не найден.", filePath);
+
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = filePath,
+            UseShellExecute = true,
+        });
     }
 
     private static HashSet<string> GetExistingFileNames(string taskDirectory)
