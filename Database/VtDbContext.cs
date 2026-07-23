@@ -9,8 +9,6 @@ public class VtDbContext(DbContextOptions<VtDbContext> options) : DbContext(opti
 
     public DbSet<SubtaskDb> Subtasks => Set<SubtaskDb>();
 
-    public DbSet<TaskFileDb> TaskFiles => Set<TaskFileDb>();
-
     public DbSet<GoalDb> Goals => Set<GoalDb>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -41,18 +39,6 @@ public class VtDbContext(DbContextOptions<VtDbContext> options) : DbContext(opti
         {
             entity.HasKey(s => s.Id);
             entity.Property(s => s.Description).IsRequired().HasMaxLength(2000);
-        });
-
-        modelBuilder.Entity<TaskFileDb>(entity =>
-        {
-            entity.HasKey(f => f.Id);
-            entity.Property(f => f.FileName).IsRequired().HasMaxLength(500);
-            entity.Property(f => f.StoredPath).IsRequired().HasMaxLength(1000);
-
-            entity.HasOne(f => f.Task)
-                .WithMany()
-                .HasForeignKey(f => f.TaskId)
-                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<GoalDb>(entity =>

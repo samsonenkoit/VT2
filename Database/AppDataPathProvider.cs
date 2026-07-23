@@ -20,9 +20,4 @@ public sealed class AppDataPathProvider : IAppDataPathProvider
     {
         return Path.Combine(GetAppDataDirectory(), TasksFilesFolderName, $"Task_{taskId}");
     }
-
-    public string GetTaskFileStoredPath(int taskId, string fileName)
-    {
-        return $"{TasksFilesFolderName}/Task_{taskId}/{fileName}";
-    }
 }

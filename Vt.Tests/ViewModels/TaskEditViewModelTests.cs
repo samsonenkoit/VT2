@@ -386,7 +386,7 @@ public class TaskEditViewModelTests
         };
         var fileService = new FakeTaskFileService(
         [
-            new TaskFileItem { Id = 1, FileName = "report.pdf" },
+            new TaskFileItem { FileName = "report.pdf" },
         ]);
         var viewModel = CreateViewModel(new FakeTaskRepository([task]), fileService: fileService);
 
@@ -408,7 +408,7 @@ public class TaskEditViewModelTests
             ProgressPercent = 0,
             Priority = TaskPriority.Medium,
         };
-        var file = new TaskFileItem { Id = 9, FileName = "notes.txt" };
+        var file = new TaskFileItem { FileName = "notes.txt" };
         var fileService = new FakeTaskFileService([file]);
         var viewModel = CreateViewModel(new FakeTaskRepository([task]), fileService: fileService);
 
@@ -416,8 +416,8 @@ public class TaskEditViewModelTests
         await viewModel.DeleteFileCommand.ExecuteAsync(file);
 
         Assert.Empty(viewModel.Files);
-        Assert.Single(fileService.DeletedFileIds);
-        Assert.Equal(9, fileService.DeletedFileIds[0]);
+        Assert.Single(fileService.DeletedFiles);
+        Assert.Equal((4, "notes.txt"), fileService.DeletedFiles[0]);
     }
 
     [Fact]
@@ -708,7 +708,7 @@ public class TaskEditViewModelTests
 
     private sealed class FakeTaskFileService(IReadOnlyList<TaskFileItem> files) : ITaskFileService
     {
-        public List<int> DeletedFileIds { get; } = [];
+        public List<(int TaskId, string FileName)> DeletedFiles { get; } = [];
 
         public Task<IReadOnlyList<TaskFileItem>> GetFilesAsync(int taskId, CancellationToken cancellationToken = default) =>
             Task.FromResult<IReadOnlyList<TaskFileItem>>(files.ToList());
@@ -716,9 +716,9 @@ public class TaskEditViewModelTests
         public Task<TaskFileItem> AddFileAsync(int taskId, string sourceFilePath, CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
-        public Task DeleteFileAsync(int fileId, CancellationToken cancellationToken = default)
+        public Task DeleteFileAsync(int taskId, string fileName, CancellationToken cancellationToken = default)
         {
-            DeletedFileIds.Add(fileId);
+            DeletedFiles.Add((taskId, fileName));
             return Task.CompletedTask;
         }
     }

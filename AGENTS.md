@@ -31,8 +31,8 @@ VT2/
 │   ├── ViewModels/
 │   └── Views/                # TasksView, TaskEditView, SettingsView
 ├── Database/                 # EF Core data layer (fully implemented)
-│   ├── Models/               # TaskDb, SubtaskDb, TaskFileDb, GoalDb + factor/priority enums
-│   ├── Repositories/         # Task / Subtask / TaskFile / Goal repositories
+│   ├── Models/               # TaskDb, SubtaskDb, GoalDb + factor/priority enums
+│   ├── Repositories/         # Task / Subtask / Goal repositories
 │   ├── Services/             # PriorityCalculator
 │   ├── Seed/                 # TaskSeedData
 │   ├── VtDbContext.cs
@@ -58,7 +58,7 @@ VT2/
 **Data**
 
 - SQLite file: `%LocalAppData%\VT2\vt2.db`.
-- Task attachments: `%LocalAppData%\VT2\TasksFiles\Task_{id}\`.
+- Task attachments: `%LocalAppData%\VT2\TasksFiles\Task_{id}\` (filesystem only; no DB metadata). Add moves into the folder; delete removes the file.
 - Soft-delete via `DeletedAtUtc` (filtered in repository queries).
 - **No EF migrations** — schema via `EnsureCreated()`.
 - **Dev reset:** each app launch runs `EnsureDeleted()` + `EnsureCreated()` + seed (`TaskSeedData`). Data does not persist across runs.
@@ -90,7 +90,7 @@ VT2/
 | Task | Yes (`TaskDb`) | Title, description, due date, progress, priority, four factors |
 | Factors | Yes | Importance, Urgency, Difficulty, DelayRisk — edited with `LevelBar` |
 | Subtasks | Yes (`SubtaskDb`) | Description, due date, progress; checklist UI on edit page |
-| Files | Yes (`TaskFileDb` + filesystem) | Tab on edit page when task is saved |
+| Files | Filesystem only (`TasksFiles/Task_{id}`) | Tab on edit page when task is saved; no DB rows |
 | Goals | Yes (`GoalDb`) | До 3 слотов на задаче; в БД только непустой текст; порядок в UI по `Id` |
 | Settings | — | Placeholder page |
 

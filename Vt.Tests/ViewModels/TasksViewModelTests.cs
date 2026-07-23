@@ -147,7 +147,7 @@ public class TasksViewModelTests
         public Task<VtApp.Models.TaskFileItem> AddFileAsync(int taskId, string sourceFilePath, CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
-        public Task DeleteFileAsync(int fileId, CancellationToken cancellationToken = default) =>
+        public Task DeleteFileAsync(int taskId, string fileName, CancellationToken cancellationToken = default) =>
             Task.CompletedTask;
     }
 

@@ -5,7 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Database.Models;
 using Database.Repositories;
-using Database.Services;
+using Database.Helpers;
 using Microsoft.Win32;
 using VtApp.Models;
 using VtApp.Services;
@@ -317,7 +317,10 @@ public partial class TaskEditViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanAddFile))]
     private async Task DeleteFileAsync(TaskFileItem file)
     {
-        await _taskFileService.DeleteFileAsync(file.Id);
+        if (_taskId is null)
+            return;
+
+        await _taskFileService.DeleteFileAsync(_taskId.Value, file.FileName);
         Files.Remove(file);
     }
 

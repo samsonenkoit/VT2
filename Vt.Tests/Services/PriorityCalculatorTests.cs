@@ -1,5 +1,5 @@
 using Database.Models;
-using Database.Services;
+using Database.Helpers;
 using Xunit;
 
 namespace Vt.Tests.Services;

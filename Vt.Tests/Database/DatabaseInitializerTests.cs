@@ -96,8 +96,5 @@ public class DatabaseInitializerTests : IDisposable
 
         public string GetTaskFilesDirectory(int taskId) =>
             Path.Combine(directory, "TasksFiles", $"Task_{taskId}");
-
-        public string GetTaskFileStoredPath(int taskId, string fileName) =>
-            $"TasksFiles/Task_{taskId}/{fileName}";
     }
 }

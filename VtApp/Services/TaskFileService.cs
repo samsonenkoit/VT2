@@ -1,28 +1,36 @@
 using System.IO;
 using Database;
-using Database.Models;
-using Database.Repositories;
 using VtApp.Models;
 
 namespace VtApp.Services;
 
-public sealed class TaskFileService(
-    ITaskFileRepository taskFileRepository,
-    IAppDataPathProvider pathProvider) : ITaskFileService
+public sealed class TaskFileService(IAppDataPathProvider pathProvider) : ITaskFileService
 {
-    public async Task<IReadOnlyList<TaskFileItem>> GetFilesAsync(
+    public Task<IReadOnlyList<TaskFileItem>> GetFilesAsync(
         int taskId,
         CancellationToken cancellationToken = default)
     {
-        var files = await taskFileRepository.GetNotDeletedAsync(taskId, cancellationToken);
-        return files.Select(ToTaskFileItem).ToList();
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var taskDirectory = pathProvider.GetTaskFilesDirectory(taskId);
+        if (!Directory.Exists(taskDirectory))
+            return Task.FromResult<IReadOnlyList<TaskFileItem>>([]);
+
+        var files = Directory.GetFiles(taskDirectory)
+            .Select(path => new TaskFileItem { FileName = Path.GetFileName(path) })
+            .OrderBy(f => f.FileName, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        return Task.FromResult<IReadOnlyList<TaskFileItem>>(files);
     }
 
-    public async Task<TaskFileItem> AddFileAsync(
+    public Task<TaskFileItem> AddFileAsync(
         int taskId,
         string sourceFilePath,
         CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         if (!File.Exists(sourceFilePath))
             throw new FileNotFoundException("Файл не найден.", sourceFilePath);
 
@@ -30,41 +38,41 @@ public sealed class TaskFileService(
         var taskDirectory = pathProvider.GetTaskFilesDirectory(taskId);
         Directory.CreateDirectory(taskDirectory);
 
-        var existingNames = await GetExistingFileNamesAsync(taskId, taskDirectory, cancellationToken);
+        var existingNames = GetExistingFileNames(taskDirectory);
         var uniqueFileName = GetUniqueFileName(sourceFileName, existingNames);
         var destinationPath = Path.Combine(taskDirectory, uniqueFileName);
 
-        File.Copy(sourceFilePath, destinationPath, overwrite: false);
+        File.Move(sourceFilePath, destinationPath);
 
-        var file = await taskFileRepository.AddAsync(new TaskFileDb
-        {
-            TaskId = taskId,
-            FileName = uniqueFileName,
-            StoredPath = pathProvider.GetTaskFileStoredPath(taskId, uniqueFileName),
-        }, cancellationToken);
-
-        return ToTaskFileItem(file);
+        return Task.FromResult(new TaskFileItem { FileName = uniqueFileName });
     }
 
-    public Task DeleteFileAsync(int fileId, CancellationToken cancellationToken = default) =>
-        taskFileRepository.SoftDeleteAsync(fileId, cancellationToken);
-
-    private async Task<HashSet<string>> GetExistingFileNamesAsync(
+    public Task DeleteFileAsync(
         int taskId,
-        string taskDirectory,
-        CancellationToken cancellationToken)
+        string fileName,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        if (string.IsNullOrWhiteSpace(fileName))
+            return Task.CompletedTask;
+
+        var filePath = Path.Combine(pathProvider.GetTaskFilesDirectory(taskId), fileName);
+        if (File.Exists(filePath))
+            File.Delete(filePath);
+
+        return Task.CompletedTask;
+    }
+
+    private static HashSet<string> GetExistingFileNames(string taskDirectory)
     {
         var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        if (Directory.Exists(taskDirectory))
-        {
-            foreach (var filePath in Directory.GetFiles(taskDirectory))
-                names.Add(Path.GetFileName(filePath));
-        }
+        if (!Directory.Exists(taskDirectory))
+            return names;
 
-        var dbFiles = await taskFileRepository.GetNotDeletedAsync(taskId, cancellationToken);
-        foreach (var file in dbFiles)
-            names.Add(file.FileName);
+        foreach (var filePath in Directory.GetFiles(taskDirectory))
+            names.Add(Path.GetFileName(filePath));
 
         return names;
     }
@@ -85,10 +93,4 @@ public sealed class TaskFileService(
                 return candidate;
         }
     }
-
-    private static TaskFileItem ToTaskFileItem(TaskFileDb file) => new()
-    {
-        Id = file.Id,
-        FileName = file.FileName,
-    };
 }

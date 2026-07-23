@@ -1,6 +1,6 @@
 using Database.Models;
 
-namespace Database.Services;
+namespace Database.Helpers;
 
 public static class PriorityCalculator
 {

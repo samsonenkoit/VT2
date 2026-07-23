@@ -1,8 +1,4 @@
 using Database;
-using Database.Models;
-using Database.Repositories;
-using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
 using VtApp.Services;
 using Xunit;
 
@@ -11,47 +7,35 @@ namespace Vt.Tests.Services;
 public class TaskFileServiceTests : IDisposable
 {
     private readonly string _tempDirectory;
-    private readonly SqliteConnection _connection;
-    private readonly VtDbContext _context;
     private readonly TaskFileService _service;
 
     public TaskFileServiceTests()
     {
         _tempDirectory = Path.Combine(Path.GetTempPath(), "VT2.Tests", Guid.NewGuid().ToString());
         Directory.CreateDirectory(_tempDirectory);
-
-        _connection = new SqliteConnection("Data Source=:memory:");
-        _connection.Open();
-
-        var options = new DbContextOptionsBuilder<VtDbContext>()
-            .UseSqlite(_connection)
-            .Options;
-
-        _context = new VtDbContext(options);
-        _context.Database.EnsureCreated();
-        _service = new TaskFileService(new TaskFileRepository(_context), new TestAppDataPathProvider(_tempDirectory));
+        _service = new TaskFileService(new TestAppDataPathProvider(_tempDirectory));
     }
 
     [Fact]
-    public async Task AddFileAsync_CopiesFileIntoTasksFilesFolder()
+    public async Task AddFileAsync_MovesFileIntoTasksFilesFolder()
     {
-        var task = await CreateTaskAsync("Задача");
+        const int taskId = 1;
         var sourcePath = Path.Combine(_tempDirectory, "source.txt");
         await File.WriteAllTextAsync(sourcePath, "test");
 
-        var file = await _service.AddFileAsync(task.Id, sourcePath);
+        var file = await _service.AddFileAsync(taskId, sourcePath);
 
-        var expectedDirectory = Path.Combine(_tempDirectory, "TasksFiles", $"Task_{task.Id}");
-        var expectedPath = Path.Combine(expectedDirectory, "source.txt");
+        var expectedPath = Path.Combine(_tempDirectory, "TasksFiles", $"Task_{taskId}", "source.txt");
         Assert.True(File.Exists(expectedPath));
+        Assert.False(File.Exists(sourcePath));
         Assert.Equal("source.txt", file.FileName);
-        Assert.Equal($"TasksFiles/Task_{task.Id}/source.txt", (await _context.TaskFiles.FindAsync(file.Id))!.StoredPath);
+        Assert.Equal("test", await File.ReadAllTextAsync(expectedPath));
     }
 
     [Fact]
     public async Task AddFileAsync_RenamesDuplicateFile()
     {
-        var task = await CreateTaskAsync("Задача");
+        const int taskId = 2;
         var firstSource = Path.Combine(_tempDirectory, "first", "report.pdf");
         var secondSource = Path.Combine(_tempDirectory, "second", "report.pdf");
         Directory.CreateDirectory(Path.GetDirectoryName(firstSource)!);
@@ -59,48 +43,59 @@ public class TaskFileServiceTests : IDisposable
         await File.WriteAllTextAsync(firstSource, "first");
         await File.WriteAllTextAsync(secondSource, "second");
 
-        await _service.AddFileAsync(task.Id, firstSource);
-        var renamed = await _service.AddFileAsync(task.Id, secondSource);
+        await _service.AddFileAsync(taskId, firstSource);
+        var renamed = await _service.AddFileAsync(taskId, secondSource);
 
         Assert.Equal("report (1).pdf", renamed.FileName);
-        Assert.True(File.Exists(Path.Combine(_tempDirectory, "TasksFiles", $"Task_{task.Id}", "report (1).pdf")));
+        Assert.True(File.Exists(Path.Combine(_tempDirectory, "TasksFiles", $"Task_{taskId}", "report.pdf")));
+        Assert.True(File.Exists(Path.Combine(_tempDirectory, "TasksFiles", $"Task_{taskId}", "report (1).pdf")));
     }
 
     [Fact]
-    public async Task DeleteFileAsync_SoftDeletesRecord()
+    public async Task GetFilesAsync_ReturnsFilesFromDisk()
     {
-        var task = await CreateTaskAsync("Задача");
-        var sourcePath = Path.Combine(_tempDirectory, "keep.txt");
-        await File.WriteAllTextAsync(sourcePath, "data");
-        var file = await _service.AddFileAsync(task.Id, sourcePath);
+        const int taskId = 3;
+        var taskDirectory = Path.Combine(_tempDirectory, "TasksFiles", $"Task_{taskId}");
+        Directory.CreateDirectory(taskDirectory);
+        await File.WriteAllTextAsync(Path.Combine(taskDirectory, "b.txt"), "b");
+        await File.WriteAllTextAsync(Path.Combine(taskDirectory, "a.txt"), "a");
 
-        await _service.DeleteFileAsync(file.Id);
+        var files = await _service.GetFilesAsync(taskId);
 
-        var storedFile = await _context.TaskFiles.FindAsync(file.Id);
-        Assert.NotNull(storedFile!.DeletedAtUtc);
-        Assert.True(File.Exists(Path.Combine(_tempDirectory, "TasksFiles", $"Task_{task.Id}", "keep.txt")));
+        Assert.Equal(["a.txt", "b.txt"], files.Select(f => f.FileName).ToArray());
     }
 
-    private async Task<TaskDb> CreateTaskAsync(string title)
+    [Fact]
+    public async Task GetFilesAsync_ReturnsEmpty_WhenFolderMissing()
     {
-        var task = new TaskDb
-        {
-            Title = title,
-            DueDateUtc = new DateTime(2026, 4, 1),
-            ProgressPercent = 0,
-            Priority = TaskPriority.Medium,
-        };
-        _context.Tasks.Add(task);
-        await _context.SaveChangesAsync();
-        return task;
+        var files = await _service.GetFilesAsync(99);
+
+        Assert.Empty(files);
+    }
+
+    [Fact]
+    public async Task DeleteFileAsync_RemovesFileFromDisk()
+    {
+        const int taskId = 4;
+        var sourcePath = Path.Combine(_tempDirectory, "keep.txt");
+        await File.WriteAllTextAsync(sourcePath, "data");
+        var file = await _service.AddFileAsync(taskId, sourcePath);
+        var storedPath = Path.Combine(_tempDirectory, "TasksFiles", $"Task_{taskId}", file.FileName);
+
+        await _service.DeleteFileAsync(taskId, file.FileName);
+
+        Assert.False(File.Exists(storedPath));
+        Assert.Empty(await _service.GetFilesAsync(taskId));
+    }
+
+    [Fact]
+    public async Task DeleteFileAsync_NoOps_WhenFileMissing()
+    {
+        await _service.DeleteFileAsync(5, "missing.txt");
     }
 
     public void Dispose()
     {
-        _context.Dispose();
-        _connection.Dispose();
-        SqliteConnection.ClearAllPools();
-
         if (Directory.Exists(_tempDirectory))
             Directory.Delete(_tempDirectory, recursive: true);
     }
@@ -113,8 +108,5 @@ public class TaskFileServiceTests : IDisposable
 
         public string GetTaskFilesDirectory(int taskId) =>
             Path.Combine(root, "TasksFiles", $"Task_{taskId}");
-
-        public string GetTaskFileStoredPath(int taskId, string fileName) =>
-            $"TasksFiles/Task_{taskId}/{fileName}";
     }
 }

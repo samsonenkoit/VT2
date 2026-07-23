@@ -8,5 +8,5 @@ public interface ITaskFileService
 
     Task<TaskFileItem> AddFileAsync(int taskId, string sourceFilePath, CancellationToken cancellationToken = default);
 
-    Task DeleteFileAsync(int fileId, CancellationToken cancellationToken = default);
+    Task DeleteFileAsync(int taskId, string fileName, CancellationToken cancellationToken = default);
 }
