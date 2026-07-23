@@ -503,11 +503,13 @@ public partial class TaskEditViewModel : ObservableObject
 
     private void ApplyGoals(IReadOnlyList<GoalDb> goals)
     {
+        //Move to config
+        const int maxGoalsCount = 3;
         Goals.Clear();
-        foreach (var goal in goals.OrderBy(g => g.Id).Take(3))
+        foreach (var goal in goals.OrderBy(g => g.Id).Take(maxGoalsCount))
             Goals.Add(new GoalEditItem { Id = goal.Id, Text = goal.Text });
 
-        while (Goals.Count < 3)
+        while (Goals.Count < maxGoalsCount)
             Goals.Add(new GoalEditItem());
     }
 
