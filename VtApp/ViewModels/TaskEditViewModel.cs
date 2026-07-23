@@ -274,8 +274,6 @@ public partial class TaskEditViewModel : ObservableObject
 
     private bool CanAddSubtask() => !string.IsNullOrWhiteSpace(NewSubtaskDescription);
 
-    private bool CanAddFile() => CanManageFiles;
-
     [RelayCommand(CanExecute = nameof(CanAddSubtask))]
     private void AddSubtask()
     {
@@ -299,6 +297,8 @@ public partial class TaskEditViewModel : ObservableObject
 
         Subtasks.Remove(subtask);
     }
+
+    private bool CanAddFile() => CanManageFiles;
 
     [RelayCommand(CanExecute = nameof(CanAddFile))]
     private async Task AddFileAsync()
@@ -417,27 +417,18 @@ public partial class TaskEditViewModel : ObservableObject
 
     private async Task SaveGoalsAsync(int taskId)
     {
-        for (var i = 0; i < Goals.Count && i < 3; i++)
+        foreach (var goal in Goals)
         {
-            var goal = Goals[i];
-            var trimmed = goal.Text.Trim();
-
-            if (string.IsNullOrWhiteSpace(trimmed))
-            {
-                if (goal.Id != 0)
-                    await _goalRepository.SoftDeleteAsync(goal.Id);
+            var trimmedText = goal.Text.Trim();
+            if (string.IsNullOrWhiteSpace(trimmedText))
                 continue;
-            }
-
             if (goal.Id == 0)
             {
-                var added = await _goalRepository.AddAsync(new GoalDb
+                await _goalRepository.AddAsync(new GoalDb
                 {
                     TaskId = taskId,
-                    Text = trimmed,
+                    Text = trimmedText,
                 });
-                goal.Id = added.Id;
-                goal.Text = trimmed;
             }
             else
             {
@@ -445,9 +436,8 @@ public partial class TaskEditViewModel : ObservableObject
                 {
                     Id = goal.Id,
                     TaskId = taskId,
-                    Text = trimmed,
+                    Text = trimmedText,
                 });
-                goal.Text = trimmed;
             }
         }
     }
