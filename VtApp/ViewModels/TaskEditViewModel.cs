@@ -20,8 +20,10 @@ public partial class TaskEditViewModel : ObservableObject
     private readonly ITaskFileService _taskFileService;
 
     private readonly List<int> _removedSubtaskIds = [];
+
     private Action? _onSaved;
     private Action? _onCancelled;
+
     private int? _taskId;
 
     #region properties
@@ -107,8 +109,6 @@ public partial class TaskEditViewModel : ObservableObject
     public string PriorityDisplay => TaskFactorDisplay.Priority(Priority);
 
     public string ProgressLabel => $"Выполнено ({ProgressPercent}%):";
-
-    public string PageTitle => IsEditMode ? "Редактирование задачи" : "Новая задача";
 
     public string SubtasksProgressLabel
     {
@@ -223,7 +223,6 @@ public partial class TaskEditViewModel : ObservableObject
     }
 
     #region handlers
-    partial void OnIsEditModeChanged(bool value) => OnPropertyChanged(nameof(PageTitle));
 
     partial void OnImportanceChanged(TaskImportance value) => RecalculatePriority();
 

@@ -224,7 +224,6 @@ public class TaskEditViewModelTests
         Assert.False(viewModel.IsLoading);
         Assert.True(viewModel.IsUiEnabled);
         Assert.Equal("Редактируемая", viewModel.Title);
-        Assert.Equal("Редактирование задачи", viewModel.PageTitle);
         Assert.Equal(TaskImportance.High, viewModel.Importance);
         Assert.Equal(TaskDelayRisk.Medium, viewModel.DelayRisk);
         Assert.Equal(TaskDifficulty.High, viewModel.Difficulty);
