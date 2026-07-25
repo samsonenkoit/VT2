@@ -94,6 +94,8 @@ public class DatabaseInitializerTests : IDisposable
 
         public string GetDatabaseFilePath() => Path.Combine(directory, "vt2.db");
 
+        public string GetSettingsFilePath() => Path.Combine(directory, "settings.json");
+
         public string GetTaskFilesDirectory(int taskId) =>
             Path.Combine(directory, "TasksFiles", $"Task_{taskId}");
     }

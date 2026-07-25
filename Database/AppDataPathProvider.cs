@@ -16,6 +16,11 @@ public sealed class AppDataPathProvider : IAppDataPathProvider
         return Path.Combine(GetAppDataDirectory(), "vt2.db");
     }
 
+    public string GetSettingsFilePath()
+    {
+        return Path.Combine(GetAppDataDirectory(), "settings.json");
+    }
+
     public string GetTaskFilesDirectory(int taskId)
     {
         return Path.Combine(GetAppDataDirectory(), TasksFilesFolderName, $"Task_{taskId}");

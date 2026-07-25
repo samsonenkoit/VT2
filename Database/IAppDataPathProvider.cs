@@ -6,5 +6,7 @@ public interface IAppDataPathProvider
 
     string GetDatabaseFilePath();
 
+    string GetSettingsFilePath();
+
     string GetTaskFilesDirectory(int taskId);
 }

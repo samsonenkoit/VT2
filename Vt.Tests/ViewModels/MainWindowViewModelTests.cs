@@ -1,5 +1,6 @@
 using Database.Models;
 using Database.Repositories;
+using VtApp.Models;
 using VtApp.Services;
 using VtApp.ViewModels;
 using Xunit;
@@ -54,7 +55,7 @@ public class MainWindowViewModelTests
         var tasksViewModel = CreateTasksViewModel();
         await tasksViewModel.AddTaskCommand.ExecuteAsync(null);
 
-        var viewModel = new MainWindowViewModel(tasksViewModel, new SettingsViewModel());
+        var viewModel = new MainWindowViewModel(tasksViewModel, CreateSettingsViewModel());
         viewModel.SelectedPage = "Settings";
 
         Assert.Same(tasksViewModel, tasksViewModel.CurrentContent);
@@ -62,7 +63,12 @@ public class MainWindowViewModelTests
 
     private static MainWindowViewModel CreateViewModel()
     {
-        return new MainWindowViewModel(CreateTasksViewModel(), new SettingsViewModel());
+        return new MainWindowViewModel(CreateTasksViewModel(), CreateSettingsViewModel());
+    }
+
+    private static SettingsViewModel CreateSettingsViewModel()
+    {
+        return new SettingsViewModel(new StubAppSettingsService(), new StubThemeService());
     }
 
     private static TasksViewModel CreateTasksViewModel()
@@ -75,6 +81,22 @@ public class MainWindowViewModelTests
                 new EmptySubtaskRepository(),
                 new EmptyGoalRepository(),
                 new EmptyTaskFileService()));
+    }
+
+    private sealed class StubAppSettingsService : IAppSettingsService
+    {
+        public AppSettings Current { get; private set; } = new();
+
+        public AppSettings Load() => Current;
+
+        public void Save(AppSettings settings) => Current = settings;
+    }
+
+    private sealed class StubThemeService : IThemeService
+    {
+        public void Apply(AppTheme theme)
+        {
+        }
     }
 
     private sealed class EmptyTaskRepository : ITaskRepository

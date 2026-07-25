@@ -3,17 +3,35 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:converters="clr-namespace:VtApp.Converters"
+             xmlns:models="clr-namespace:VtApp.Models"
              mc:Ignorable="d"
              d:DesignHeight="450"
              d:DesignWidth="800">
+    <UserControl.Resources>
+        <converters:EnumEqualsConverter x:Key="EnumEqualsConverter" />
+    </UserControl.Resources>
+
     <StackPanel VerticalAlignment="Top">
         <TextBlock Text="{Binding Title}"
                    Style="{StaticResource MaterialDesignHeadline4TextBlock}"
                    Margin="0,0,0,16" />
 
-        <TextBlock Text="Здесь будут настройки подключения IMAP и правил сортировки почты."
-                   Style="{StaticResource MaterialDesignBody1TextBlock}"
-                   Opacity="0.7"
-                   TextWrapping="Wrap" />
+        <TextBlock Text="Оформление"
+                   Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
+                   Margin="0,0,0,8" />
+
+        <StackPanel Orientation="Horizontal"
+                    Margin="0,0,0,24">
+            <RadioButton Content="Светлая"
+                         GroupName="AppTheme"
+                         Style="{StaticResource MaterialDesignRadioButton}"
+                         Margin="0,0,24,0"
+                         IsChecked="{Binding SelectedTheme, Converter={StaticResource EnumEqualsConverter}, ConverterParameter={x:Static models:AppTheme.Light}}" />
+            <RadioButton Content="Тёмная"
+                         GroupName="AppTheme"
+                         Style="{StaticResource MaterialDesignRadioButton}"
+                         IsChecked="{Binding SelectedTheme, Converter={StaticResource EnumEqualsConverter}, ConverterParameter={x:Static models:AppTheme.Dark}}" />
+        </StackPanel>
     </StackPanel>
 </UserControl>

@@ -106,6 +106,8 @@ public class TaskFileServiceTests : IDisposable
 
         public string GetDatabaseFilePath() => Path.Combine(root, "vt2.db");
 
+        public string GetSettingsFilePath() => Path.Combine(root, "settings.json");
+
         public string GetTaskFilesDirectory(int taskId) =>
             Path.Combine(root, "TasksFiles", $"Task_{taskId}");
     }
