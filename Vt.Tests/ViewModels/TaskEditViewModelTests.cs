@@ -600,6 +600,84 @@ public class TaskEditViewModelTests
         Assert.Equal("Подзадачи · 2/2", viewModel.SubtasksProgressLabel);
     }
 
+    [Fact]
+    public async Task ProgressPercent_AveragesFromSubtasks_AndLocksSlider()
+    {
+        var viewModel = CreateViewModel(new FakeTaskRepository([]));
+        await viewModel.PrepareForCreateAsync();
+        viewModel.ProgressPercent = 10;
+
+        viewModel.Subtasks.Add(new SubtaskEditItem { Description = "A", ProgressPercent = 0 });
+        viewModel.Subtasks.Add(new SubtaskEditItem { Description = "B", ProgressPercent = 100 });
+
+        Assert.Equal(50, viewModel.ProgressPercent);
+        Assert.False(viewModel.IsProgressEditable);
+    }
+
+    [Fact]
+    public async Task ProgressPercent_UpdatesWhenSubtaskProgressChanges()
+    {
+        var viewModel = CreateViewModel(new FakeTaskRepository([]));
+        await viewModel.PrepareForCreateAsync();
+        viewModel.Subtasks.Add(new SubtaskEditItem { Description = "A", ProgressPercent = 0 });
+        viewModel.Subtasks.Add(new SubtaskEditItem { Description = "B", ProgressPercent = 0 });
+
+        Assert.Equal(0, viewModel.ProgressPercent);
+
+        viewModel.Subtasks[0].ProgressPercent = 100;
+
+        Assert.Equal(50, viewModel.ProgressPercent);
+    }
+
+    [Fact]
+    public async Task ProgressPercent_UnlocksWhenAllContributingSubtasksRemoved()
+    {
+        var viewModel = CreateViewModel(new FakeTaskRepository([]));
+        await viewModel.PrepareForCreateAsync();
+        viewModel.Subtasks.Add(new SubtaskEditItem { Description = "A", ProgressPercent = 100 });
+
+        Assert.False(viewModel.IsProgressEditable);
+        Assert.Equal(100, viewModel.ProgressPercent);
+
+        viewModel.RemoveSubtaskCommand.Execute(viewModel.Subtasks[0]);
+
+        Assert.True(viewModel.IsProgressEditable);
+        Assert.Equal(100, viewModel.ProgressPercent);
+
+        viewModel.ProgressPercent = 25;
+        Assert.Equal(25, viewModel.ProgressPercent);
+    }
+
+    [Fact]
+    public async Task EmptySubtaskDraft_DoesNotLockOrChangeProgress()
+    {
+        var viewModel = CreateViewModel(new FakeTaskRepository([]));
+        await viewModel.PrepareForCreateAsync();
+        viewModel.ProgressPercent = 40;
+
+        viewModel.Subtasks.Add(new SubtaskEditItem { Description = "   ", ProgressPercent = 100 });
+
+        Assert.True(viewModel.IsProgressEditable);
+        Assert.Equal(40, viewModel.ProgressPercent);
+    }
+
+    [Fact]
+    public async Task SaveAsync_Create_PersistsProgressAveragedFromSubtasks()
+    {
+        var taskRepository = new FakeTaskRepository([]);
+        var viewModel = CreateViewModel(taskRepository);
+
+        await viewModel.PrepareForCreateAsync();
+        viewModel.Title = "Задача";
+        viewModel.ProgressPercent = 5;
+        viewModel.Subtasks.Add(new SubtaskEditItem { Description = "A", ProgressPercent = 0 });
+        viewModel.Subtasks.Add(new SubtaskEditItem { Description = "B", ProgressPercent = 100 });
+        await viewModel.SaveCommand.ExecuteAsync(null);
+
+        var added = Assert.Single(taskRepository.AddedTasks);
+        Assert.Equal(50, added.ProgressPercent);
+    }
+
     private static TaskEditViewModel CreateViewModel(
         FakeTaskRepository repository,
         FakeSubtaskRepository? subtaskRepository = null,

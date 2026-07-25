@@ -167,6 +167,7 @@
                                 <Slider Minimum="0"
                                         Maximum="100"
                                         Value="{Binding ProgressPercent, Mode=TwoWay}"
+                                        IsEnabled="{Binding IsProgressEditable}"
                                         Margin="0,0,0,12" />
 
                                 <Grid>

@@ -112,6 +112,8 @@ public partial class TaskEditViewModel : ObservableObject
 
     public string ProgressLabel => $"Выполнено ({ProgressPercent}%):";
 
+    public bool IsProgressEditable => !HasContributingSubtasks();
+
     public string SubtasksProgressLabel
     {
         get
@@ -482,12 +484,34 @@ public partial class TaskEditViewModel : ObservableObject
 
     private void OnSubtaskPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is nameof(SubtaskEditItem.ProgressPercent) or nameof(SubtaskEditItem.IsDone))
+        if (e.PropertyName is nameof(SubtaskEditItem.ProgressPercent)
+            or nameof(SubtaskEditItem.IsDone)
+            or nameof(SubtaskEditItem.Description))
             NotifySubtasksProgressChanged();
     }
 
-    private void NotifySubtasksProgressChanged() =>
+    private void NotifySubtasksProgressChanged()
+    {
         OnPropertyChanged(nameof(SubtasksProgressLabel));
+        OnPropertyChanged(nameof(IsProgressEditable));
+        SyncProgressFromSubtasks();
+    }
+
+    private void SyncProgressFromSubtasks()
+    {
+        var percents = Subtasks
+            .Where(s => !string.IsNullOrWhiteSpace(s.Description))
+            .Select(s => s.ProgressPercent);
+
+        if (!TaskProgressCalculator.TryAverage(percents, out var average))
+            return;
+
+        if (ProgressPercent != average)
+            ProgressPercent = average;
+    }
+
+    private bool HasContributingSubtasks() =>
+        Subtasks.Any(s => !string.IsNullOrWhiteSpace(s.Description));
 
     private static string? PickFile()
     {
