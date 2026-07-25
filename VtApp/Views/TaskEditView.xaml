@@ -265,7 +265,31 @@
                                                         VerticalAlignment="Center"
                                                         Margin="0,0,12,0">
                                                 <Button Command="{Binding SetProgressCommand}"
+                                                        Style="{StaticResource MaterialDesignFlatButton}"
                                                         Width="16" Height="10" Padding="0" Margin="0,0,3,0"
+                                                        MinWidth="16" MinHeight="10"
+                                                        Cursor="Hand" Focusable="False" ToolTip="0"
+                                                        Background="Transparent" BorderThickness="0">
+                                                    <Button.CommandParameter>
+                                                        <sys:Int32>0</sys:Int32>
+                                                    </Button.CommandParameter>
+                                                    <Border Width="16" Height="10" CornerRadius="2">
+                                                        <Border.Style>
+                                                            <Style TargetType="Border">
+                                                                <Setter Property="Background" Value="#E0E0E0" />
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding DataContext.ProgressPercent, RelativeSource={RelativeSource AncestorType=Button}, Converter={StaticResource ProgressAtLeastConverter}, ConverterParameter=33}" Value="True">
+                                                                        <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Secondary}" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Border.Style>
+                                                    </Border>
+                                                </Button>
+                                                <Button Command="{Binding SetProgressCommand}"
+                                                        Style="{StaticResource MaterialDesignFlatButton}"
+                                                        Width="16" Height="10" Padding="0" Margin="0,0,3,0"
+                                                        MinWidth="16" MinHeight="10"
                                                         Cursor="Hand" Focusable="False" ToolTip="1/3"
                                                         Background="Transparent" BorderThickness="0">
                                                     <Button.CommandParameter>
@@ -276,8 +300,8 @@
                                                             <Style TargetType="Border">
                                                                 <Setter Property="Background" Value="#E0E0E0" />
                                                                 <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding ProgressPercent, Converter={StaticResource ProgressAtLeastConverter}, ConverterParameter=33}" Value="True">
-                                                                        <Setter Property="Background" Value="{DynamicResource SecondaryHueMidBrush}" />
+                                                                    <DataTrigger Binding="{Binding DataContext.ProgressPercent, RelativeSource={RelativeSource AncestorType=Button}, Converter={StaticResource ProgressAtLeastConverter}, ConverterParameter=33}" Value="True">
+                                                                        <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Secondary}" />
                                                                     </DataTrigger>
                                                                 </Style.Triggers>
                                                             </Style>
@@ -285,7 +309,9 @@
                                                     </Border>
                                                 </Button>
                                                 <Button Command="{Binding SetProgressCommand}"
+                                                        Style="{StaticResource MaterialDesignFlatButton}"
                                                         Width="16" Height="10" Padding="0" Margin="0,0,3,0"
+                                                        MinWidth="16" MinHeight="10"
                                                         Cursor="Hand" Focusable="False" ToolTip="2/3"
                                                         Background="Transparent" BorderThickness="0">
                                                     <Button.CommandParameter>
@@ -296,8 +322,8 @@
                                                             <Style TargetType="Border">
                                                                 <Setter Property="Background" Value="#E0E0E0" />
                                                                 <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding ProgressPercent, Converter={StaticResource ProgressAtLeastConverter}, ConverterParameter=67}" Value="True">
-                                                                        <Setter Property="Background" Value="{DynamicResource SecondaryHueMidBrush}" />
+                                                                    <DataTrigger Binding="{Binding DataContext.ProgressPercent, RelativeSource={RelativeSource AncestorType=Button}, Converter={StaticResource ProgressAtLeastConverter}, ConverterParameter=67}" Value="True">
+                                                                        <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Secondary}" />
                                                                     </DataTrigger>
                                                                 </Style.Triggers>
                                                             </Style>
@@ -305,7 +331,9 @@
                                                     </Border>
                                                 </Button>
                                                 <Button Command="{Binding SetProgressCommand}"
+                                                        Style="{StaticResource MaterialDesignFlatButton}"
                                                         Width="16" Height="10" Padding="0" Margin="0,0,3,0"
+                                                        MinWidth="16" MinHeight="10"
                                                         Cursor="Hand" Focusable="False" ToolTip="Готово"
                                                         Background="Transparent" BorderThickness="0">
                                                     <Button.CommandParameter>
@@ -316,28 +344,8 @@
                                                             <Style TargetType="Border">
                                                                 <Setter Property="Background" Value="#E0E0E0" />
                                                                 <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding ProgressPercent, Converter={StaticResource ProgressAtLeastConverter}, ConverterParameter=100}" Value="True">
-                                                                        <Setter Property="Background" Value="{DynamicResource SecondaryHueMidBrush}" />
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </Border.Style>
-                                                    </Border>
-                                                </Button>
-                                                <Button Command="{Binding SetProgressCommand}"
-                                                        Width="16" Height="10" Padding="0"
-                                                        Cursor="Hand" Focusable="False" ToolTip="Готово"
-                                                        Background="Transparent" BorderThickness="0">
-                                                    <Button.CommandParameter>
-                                                        <sys:Int32>100</sys:Int32>
-                                                    </Button.CommandParameter>
-                                                    <Border Width="16" Height="10" CornerRadius="2">
-                                                        <Border.Style>
-                                                            <Style TargetType="Border">
-                                                                <Setter Property="Background" Value="#E0E0E0" />
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding ProgressPercent, Converter={StaticResource ProgressAtLeastConverter}, ConverterParameter=100}" Value="True">
-                                                                        <Setter Property="Background" Value="{DynamicResource SecondaryHueMidBrush}" />
+                                                                    <DataTrigger Binding="{Binding DataContext.ProgressPercent, RelativeSource={RelativeSource AncestorType=Button}, Converter={StaticResource ProgressAtLeastConverter}, ConverterParameter=100}" Value="True">
+                                                                        <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Secondary}" />
                                                                     </DataTrigger>
                                                                 </Style.Triggers>
                                                             </Style>

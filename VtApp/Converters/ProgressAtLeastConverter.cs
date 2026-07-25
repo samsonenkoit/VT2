@@ -13,7 +13,7 @@ public class ProgressAtLeastConverter : IValueConverter
         if (value is not int progress)
             return false;
 
-        if (!int.TryParse(parameter?.ToString(), NumberStyles.Integer, culture, out var threshold))
+        if (!int.TryParse(parameter?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var threshold))
             return false;
 
         return progress >= threshold;
