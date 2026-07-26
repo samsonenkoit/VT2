@@ -22,6 +22,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IGoalRepository, GoalRepository>();
         services.AddScoped<ITaskFileService, TaskFileService>();
         services.AddSingleton<IAppSettingsService, AppSettingsService>();
+        services.AddSingleton<IAppVersionService, AppVersionService>();
         services.AddSingleton<IThemeService, ThemeService>();
         services.AddTransient<TaskEditViewModel>();
         services.AddTransient<TasksViewModel>();

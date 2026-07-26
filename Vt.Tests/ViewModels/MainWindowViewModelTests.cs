@@ -68,7 +68,10 @@ public class MainWindowViewModelTests
 
     private static SettingsViewModel CreateSettingsViewModel()
     {
-        return new SettingsViewModel(new StubAppSettingsService(), new StubThemeService());
+        return new SettingsViewModel(
+            new StubAppSettingsService(),
+            new StubThemeService(),
+            new StubAppVersionService());
     }
 
     private static TasksViewModel CreateTasksViewModel()
@@ -97,6 +100,11 @@ public class MainWindowViewModelTests
         public void Apply(AppTheme theme)
         {
         }
+    }
+
+    private sealed class StubAppVersionService : IAppVersionService
+    {
+        public AppVersion Current { get; } = new();
     }
 
     private sealed class EmptyTaskRepository : ITaskRepository

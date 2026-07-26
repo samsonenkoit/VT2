@@ -12,7 +12,10 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private AppTheme _selectedTheme;
 
-    public SettingsViewModel(IAppSettingsService settingsService, IThemeService themeService)
+    public SettingsViewModel(
+        IAppSettingsService settingsService,
+        IThemeService themeService,
+        IAppVersionService versionService)
     {
         _settingsService = settingsService;
         _themeService = themeService;
