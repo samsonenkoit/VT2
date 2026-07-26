@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="Database/Database.csproj" />
+  <Project Path="Installer/Installer.csproj" Id="3dc34d36-22e9-4728-ae3b-d503d922ea6e" />
   <Project Path="Vt.Tests/Vt.Tests.csproj" Id="5683dc22-c6c4-4466-b49a-aba7e0f94a45" />
   <Project Path="VtApp/VtApp.csproj" />
 </Solution>
