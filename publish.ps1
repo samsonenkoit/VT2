@@ -1,4 +1,4 @@
-# Publishes Framework-dependent and Self-contained builds into ./publish/{major}_{minor}
+# Publishes Framework-dependent and Self-contained builds as zip archives into ./publish/{major}_{minor}
 # Usage: .\publish.ps1
 # Optional: .\publish.ps1 -Configuration Release -Runtime win-x64
 
@@ -32,17 +32,35 @@ if ($null -eq $version.major -or $null -eq $version.minor) {
 
 $versionFolderName = "{0}_{1}" -f $version.major, $version.minor
 $versionOut = Join-Path $publishRoot $versionFolderName
-$fddOut = Join-Path $versionOut "framework-dependent"
-$scOut = Join-Path $versionOut "self-contained"
+$fddDir = Join-Path $versionOut "framework-dependent"
+$scDir = Join-Path $versionOut "self-contained"
+$fddZip = Join-Path $versionOut "framework-dependent.zip"
+$scZip = Join-Path $versionOut "self-contained.zip"
+
+function Compress-PublishFolder {
+    param(
+        [Parameter(Mandatory)]
+        [string] $SourceDir,
+
+        [Parameter(Mandatory)]
+        [string] $ZipPath
+    )
+
+    if (Test-Path $ZipPath) {
+        Remove-Item $ZipPath -Force
+    }
+
+    Compress-Archive -Path (Join-Path $SourceDir "*") -DestinationPath $ZipPath -CompressionLevel Optimal
+    Remove-Item $SourceDir -Recurse -Force
+}
 
 Write-Host "Publishing version $versionFolderName ..."
 Write-Host "Cleaning $publishRoot ..."
 if (Test-Path $publishRoot) {
     Remove-Item $publishRoot -Recurse -Force
 }
-New-Item -ItemType Directory -Path $fddOut -Force | Out-Null
-New-Item -ItemType Directory -Path $scOut -Force | Out-Null
-Copy-Item $versionFile (Join-Path $versionOut "version.json")
+New-Item -ItemType Directory -Path $fddDir -Force | Out-Null
+New-Item -ItemType Directory -Path $scDir -Force | Out-Null
 
 Write-Host ""
 Write-Host "=== Framework-dependent ($Configuration, $Runtime) ==="
@@ -50,10 +68,11 @@ dotnet publish $project `
     -c $Configuration `
     -r $Runtime `
     --self-contained false `
-    -o $fddOut
+    -o $fddDir
 if ($LASTEXITCODE -ne 0) {
     throw "Framework-dependent publish failed with exit code $LASTEXITCODE"
 }
+Compress-PublishFolder -SourceDir $fddDir -ZipPath $fddZip
 
 Write-Host ""
 Write-Host "=== Self-contained ($Configuration, $Runtime) ==="
@@ -61,14 +80,14 @@ dotnet publish $project `
     -c $Configuration `
     -r $Runtime `
     --self-contained true `
-    -o $scOut
+    -o $scDir
 if ($LASTEXITCODE -ne 0) {
     throw "Self-contained publish failed with exit code $LASTEXITCODE"
 }
+Compress-PublishFolder -SourceDir $scDir -ZipPath $scZip
 
 Write-Host ""
 Write-Host "Done."
 Write-Host "  Version folder:       $versionOut"
-Write-Host "  version.json:         $(Join-Path $versionOut 'version.json')"
-Write-Host "  Framework-dependent:  $fddOut"
-Write-Host "  Self-contained:       $scOut"
+Write-Host "  Framework-dependent:  $fddZip"
+Write-Host "  Self-contained:       $scZip"
