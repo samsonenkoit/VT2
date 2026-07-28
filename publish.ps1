@@ -61,6 +61,7 @@ if (Test-Path $publishRoot) {
 }
 New-Item -ItemType Directory -Path $fddDir -Force | Out-Null
 New-Item -ItemType Directory -Path $scDir -Force | Out-Null
+Copy-Item $versionFile (Join-Path $publishRoot "version.json")
 
 Write-Host ""
 Write-Host "=== Framework-dependent ($Configuration, $Runtime) ==="
@@ -89,5 +90,6 @@ Compress-PublishFolder -SourceDir $scDir -ZipPath $scZip
 Write-Host ""
 Write-Host "Done."
 Write-Host "  Version folder:       $versionOut"
+Write-Host "  version.json:         $(Join-Path $publishRoot 'version.json')"
 Write-Host "  Framework-dependent:  $fddZip"
 Write-Host "  Self-contained:       $scZip"
