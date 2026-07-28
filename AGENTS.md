@@ -16,6 +16,7 @@
 | Data | EF Core 10 + SQLite (`Microsoft.EntityFrameworkCore.Sqlite`) |
 | Tests | xUnit (`Vt.Tests`) |
 | Solution | `VT2.slnx` |
+| Installer | WPF (`Installer`), скачивает `self-contained.zip` из Yandex Object Storage |
 
 ## Solution Structure
 
@@ -30,6 +31,7 @@ VT2/
 │   ├── Services/             # TaskMapper, TaskFileService, TaskFactorDisplay
 │   ├── ViewModels/
 │   └── Views/                # TasksView, TaskEditView, SettingsView
+├── Installer/                # WPF installer / updater
 ├── Database/                 # EF Core data layer (fully implemented)
 │   ├── Models/               # TaskDb, SubtaskDb, GoalDb + factor/priority enums
 │   ├── Repositories/         # Task / Subtask / Goal repositories
@@ -40,6 +42,13 @@ VT2/
 │   └── AppDataPathProvider.cs
 └── Vt.Tests/                 # ViewModels, repositories, services, DB initializer
 ```
+
+## Installer and distribution
+
+- Publish: `.\publish.ps1` → `publish/{major}_{minor}/framework-dependent.zip` and `self-contained.zip` (folder name from `VtApp/version.json`).
+- Upload that folder to Yandex Object Storage under `vt2/{major}_{minor}/` (bucket `vt2`). Keep exactly one version folder.
+- Installer lists `https://storage.yandexcloud.net/vt2?list-type=2&prefix=vt2/&delimiter=/`, downloads `self-contained.zip`, installs to `%LocalAppData%\VT2\App`, creates Desktop shortcut `VT2.lnk`.
+- Local data (`vt2.db`, `TasksFiles`) stays under `%LocalAppData%\VT2\` outside `App`.
 
 ## Architecture
 
@@ -113,6 +122,8 @@ VT2/
 dotnet build VT2.slnx
 dotnet test VT2.slnx
 dotnet run --project VtApp/VtApp.csproj
+dotnet run --project Installer/Installer.csproj
+.\publish.ps1
 ```
 
 Requires .NET 10 SDK and Windows (WPF). Close a running `VtApp` before rebuild if copy-to-output fails (`MSB3027`).
