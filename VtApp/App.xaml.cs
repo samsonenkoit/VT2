@@ -21,8 +21,10 @@ public partial class App : Application
         _scope = serviceProvider.CreateScope();
 
         var settingsService = _scope.ServiceProvider.GetRequiredService<IAppSettingsService>();
+        var versionService = _scope.ServiceProvider.GetRequiredService<IAppVersionService>();
         var themeService = _scope.ServiceProvider.GetRequiredService<IThemeService>();
         var settings = settingsService.Load();
+        versionService.Load();
         themeService.Apply(settings.Theme);
 
         var mainWindow = _scope.ServiceProvider.GetRequiredService<MainWindow>();

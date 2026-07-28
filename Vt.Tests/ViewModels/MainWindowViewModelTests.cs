@@ -105,6 +105,8 @@ public class MainWindowViewModelTests
     private sealed class StubAppVersionService : IAppVersionService
     {
         public AppVersion Current { get; } = new();
+
+        public AppVersion Load() => Current;
     }
 
     private sealed class EmptyTaskRepository : ITaskRepository

@@ -33,5 +33,12 @@
                          Style="{StaticResource MaterialDesignRadioButton}"
                          IsChecked="{Binding SelectedTheme, Converter={StaticResource EnumEqualsConverter}, ConverterParameter={x:Static models:AppTheme.Dark}}" />
         </StackPanel>
+
+        <TextBlock Text="О приложении"
+                   Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
+                   Margin="0,0,0,8" />
+
+        <TextBlock Text="{Binding VersionText}"
+                   Style="{StaticResource MaterialDesignBody1TextBlock}" />
     </StackPanel>
 </UserControl>

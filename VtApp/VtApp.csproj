@@ -25,4 +25,8 @@
     <None Include="Assets\vt2-app-icon.png" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="version.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

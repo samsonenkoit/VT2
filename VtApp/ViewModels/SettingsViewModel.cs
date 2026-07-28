@@ -21,9 +21,12 @@ public partial class SettingsViewModel : ObservableObject
         _themeService = themeService;
         // Assign field to avoid Save/Apply on construction.
         _selectedTheme = settingsService.Current.Theme;
+        VersionText = $"Версия {versionService.Current.Display}";
     }
 
     public string Title => "Настройки";
+
+    public string VersionText { get; }
 
     partial void OnSelectedThemeChanged(AppTheme value)
     {
