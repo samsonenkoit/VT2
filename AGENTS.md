@@ -16,7 +16,7 @@
 | Data | EF Core 10 + SQLite (`Microsoft.EntityFrameworkCore.Sqlite`) |
 | Tests | xUnit (`Vt.Tests`) |
 | Solution | `VT2.slnx` |
-| Installer | WPF (`Installer`), скачивает `self-contained.zip` из Yandex Object Storage |
+| Installer | WPF (`Installer`), single-file framework-dependent `Installer.exe`, скачивает `self-contained.zip` из Yandex Object Storage |
 
 ## Solution Structure
 
@@ -123,6 +123,7 @@ dotnet build VT2.slnx
 dotnet test VT2.slnx
 dotnet run --project VtApp/VtApp.csproj
 dotnet run --project Installer/Installer.csproj
+dotnet publish Installer/Installer.csproj -c Release -o publish/Installer
 .\publish.ps1
 ```
 

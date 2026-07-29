@@ -7,7 +7,6 @@ namespace Installer.Services;
 public sealed class YandexStorageService : IDisposable
 {
     public const string BucketName = "vt2";
-    public const string ObjectPrefix = "vt2/";
     public const string VersionFileName = "version.json";
     public const string SelfContainedZipName = "self-contained.zip";
 
@@ -44,7 +43,7 @@ public sealed class YandexStorageService : IDisposable
     }
 
     public string GetSelfContainedZipUrl(AppVersion version) =>
-        $"https://storage.yandexcloud.net/{BucketName}/{ObjectPrefix}{version.FolderName}/{SelfContainedZipName}";
+        $"https://storage.yandexcloud.net/{BucketName}/{version.FolderName}/{SelfContainedZipName}";
 
     public async Task DownloadFileAsync(
         string url,
