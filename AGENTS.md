@@ -70,7 +70,7 @@ VT2/
 - Task attachments: `%LocalAppData%\VT2\TasksFiles\Task_{id}\` (filesystem only; no DB metadata). Add moves into the folder; delete removes the file.
 - Soft-delete via `DeletedAtUtc` (filtered in repository queries).
 - **No EF migrations** — schema via `EnsureCreated()`.
-- **Dev reset:** each app launch runs `EnsureDeleted()` + `EnsureCreated()` + seed (`TaskSeedData`). Data does not persist across runs.
+- On first launch: `EnsureCreated()` + seed (`TaskSeedData`). Subsequent launches keep the existing database.
 
 **Priority**
 

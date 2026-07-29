@@ -16,8 +16,11 @@ public sealed class DatabaseInitializer(IAppDataPathProvider pathProvider)
             .Options;
 
         using var context = new VtDbContext(options);
-        context.Database.EnsureDeleted();
-        context.Database.EnsureCreated();
+        var created = context.Database.EnsureCreated();
+        if (!created)
+        {
+            return;
+        }
 
         var (tasks, subtasks, goals) = TaskSeedData.GetSeedData();
         context.Tasks.AddRange(tasks);
