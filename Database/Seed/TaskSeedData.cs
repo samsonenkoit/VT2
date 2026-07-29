@@ -174,11 +174,12 @@ public static class TaskSeedData
             new() { Description = "Добавить регрессионный тест", TaskId = 2 },
             new() { Description = "Выкатить исправление на прод", TaskId = 2 },
 
-            // Task 3 — 5
+            // Task 3 — 6
             new() { Description = "Собрать материалы по замечаниям", TaskId = 3 },
             new() { Description = "Подготовить черновик ответа", TaskId = 3 },
             new() { Description = "Согласовать формулировки с compliance", TaskId = 3 },
             new() { Description = "Приложить подтверждающие документы", TaskId = 3 },
+            new() { Description = "Проверить даты и реквизиты", TaskId = 3 },
             new() { Description = "Отправить пакет регулятору", TaskId = 3 },
 
             // Task 4 — 2
@@ -212,10 +213,12 @@ public static class TaskSeedData
             new() { Description = "Уточнить роли у партнёров", TaskId = 9, ProgressPercent = 50 },
             new() { Description = "Опубликовать обновлённый справочник", TaskId = 9 },
 
-            // Task 10 — 4
+            // Task 10 — 6
             new() { Description = "Собрать топ частых вопросов", TaskId = 10, ProgressPercent = 70 },
             new() { Description = "Написать черновики ответов", TaskId = 10, ProgressPercent = 30 },
             new() { Description = "Согласовать тон с маркетингом", TaskId = 10 },
+            new() { Description = "Проверить факты с продуктовой командой", TaskId = 10 },
+            new() { Description = "Оформить шаблоны в едином стиле", TaskId = 10 },
             new() { Description = "Загрузить шаблоны в базу знаний", TaskId = 10 },
 
             // Task 11 — 1
