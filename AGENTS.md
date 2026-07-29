@@ -16,7 +16,7 @@
 | Data | EF Core 10 + SQLite (`Microsoft.EntityFrameworkCore.Sqlite`) |
 | Tests | xUnit (`Vt.Tests`) |
 | Solution | `VT2.slnx` |
-| Installer | WPF (`Installer`), single-file framework-dependent `Installer.exe`, скачивает `self-contained.zip` из Yandex Object Storage |
+| Installer | WPF (`Installer`), self-contained single-file `Installer.exe`, скачивает `self-contained.zip` из Yandex Object Storage |
 
 ## Solution Structure
 
