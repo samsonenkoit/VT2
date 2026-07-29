@@ -6,13 +6,17 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
-    <ApplicationIcon>..\VtApp\Assets\vt2.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\vt2-installer.ico</ApplicationIcon>
     <RootNamespace>Installer</RootNamespace>
     <AssemblyName>Installer</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\vt2-installer.ico" />
   </ItemGroup>
 
 </Project>

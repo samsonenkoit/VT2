@@ -11,7 +11,8 @@
         MinHeight="240"
         MinWidth="420"
         WindowStartupLocation="CenterScreen"
-        ResizeMode="CanMinimize">
+        ResizeMode="CanMinimize"
+        Icon="pack://application:,,,/Assets/vt2-installer.ico">
     <Window.DataContext>
         <vm:MainViewModel />
     </Window.DataContext>
