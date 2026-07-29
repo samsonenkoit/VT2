@@ -3,10 +3,66 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Installer"
+        xmlns:vm="clr-namespace:Installer.ViewModels"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="Установка VT2"
+        Height="280"
+        Width="520"
+        MinHeight="240"
+        MinWidth="420"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="CanMinimize">
+    <Window.DataContext>
+        <vm:MainViewModel />
+    </Window.DataContext>
 
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0"
+                   Text="VT2"
+                   FontSize="28"
+                   FontWeight="SemiBold"
+                   Margin="0,0,0,4" />
+
+        <TextBlock Grid.Row="1"
+                   Text="Установка и обновление приложения"
+                   FontSize="14"
+                   Opacity="0.7"
+                   Margin="0,0,0,20" />
+
+        <TextBlock Grid.Row="2"
+                   Text="{Binding StatusText}"
+                   TextWrapping="Wrap"
+                   VerticalAlignment="Top"
+                   FontSize="13" />
+
+        <ProgressBar Grid.Row="3"
+                     Height="8"
+                     Margin="0,16,0,20"
+                     Minimum="0"
+                     Maximum="1"
+                     Value="{Binding ProgressValue}"
+                     IsIndeterminate="{Binding IsProgressIndeterminate}" />
+
+        <StackPanel Grid.Row="4"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right">
+            <Button Content="Установить / Обновить"
+                    Padding="16,8"
+                    Margin="0,0,8,0"
+                    IsDefault="True"
+                    Command="{Binding InstallOrUpdateCommand}" />
+            <Button Content="Закрыть"
+                    Padding="16,8"
+                    IsCancel="True"
+                    Click="CloseButton_OnClick" />
+        </StackPanel>
     </Grid>
 </Window>
