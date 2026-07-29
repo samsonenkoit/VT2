@@ -1,35 +1,74 @@
 using System.Text.Json;
-using System.Text.RegularExpressions;
 using System.IO;
 using Installer.Models;
 
 namespace Installer.Services;
 
-public static partial class VersionParser
+public static class VersionParser
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
+    public static AppVersion ParseVersionJson(string json)
     {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-    };
-
-    [GeneratedRegex(@"^(?<major>\d+)_(?<minor>\d+)$", RegexOptions.CultureInvariant)]
-    private static partial Regex FolderNameRegex();
-
-    public static bool TryParseFolderName(string folderName, out AppVersion version)
-    {
-        version = new AppVersion();
-        var match = FolderNameRegex().Match(folderName);
-        if (!match.Success)
+        if (string.IsNullOrWhiteSpace(json))
         {
-            return false;
+            throw new InvalidOperationException(
+                "Файл version.json пуст или недоступен.");
         }
 
-        version = new AppVersion
+        try
         {
-            Major = int.Parse(match.Groups["major"].Value),
-            Minor = int.Parse(match.Groups["minor"].Value)
-        };
-        return true;
+            using var document = JsonDocument.Parse(json);
+            if (document.RootElement.ValueKind != JsonValueKind.Object)
+            {
+                throw new InvalidOperationException(
+                    "Файл version.json должен содержать JSON-объект с полями major и minor.");
+            }
+
+            if (!document.RootElement.TryGetProperty("major", out var majorElement) ||
+                !document.RootElement.TryGetProperty("minor", out var minorElement))
+            {
+                throw new InvalidOperationException(
+                    "Файл version.json должен содержать поля major и minor.");
+            }
+
+            if (majorElement.ValueKind != JsonValueKind.Number ||
+                !majorElement.TryGetInt32(out var major) ||
+                major < 0)
+            {
+                throw new InvalidOperationException(
+                    "Поле major в version.json должно быть неотрицательным целым числом.");
+            }
+
+            if (minorElement.ValueKind != JsonValueKind.Number ||
+                !minorElement.TryGetInt32(out var minor) ||
+                minor < 0)
+            {
+                throw new InvalidOperationException(
+                    "Поле minor в version.json должно быть неотрицательным целым числом.");
+            }
+
+            return new AppVersion
+            {
+                Major = major,
+                Minor = minor
+            };
+        }
+        catch (JsonException ex)
+        {
+            throw new InvalidOperationException(
+                "Не удалось разобрать version.json: некорректный JSON.", ex);
+        }
+    }
+
+    public static AppVersion? TryParseVersionJson(string json)
+    {
+        try
+        {
+            return ParseVersionJson(json);
+        }
+        catch (InvalidOperationException)
+        {
+            return null;
+        }
     }
 
     public static AppVersion? TryReadVersionJson(string filePath)
@@ -42,41 +81,11 @@ public static partial class VersionParser
         try
         {
             var json = File.ReadAllText(filePath);
-            return JsonSerializer.Deserialize<AppVersion>(json, JsonOptions);
-        }
-        catch (JsonException)
-        {
-            return null;
+            return TryParseVersionJson(json);
         }
         catch (IOException)
         {
             return null;
         }
-    }
-
-    /// <summary>
-    /// Extracts folder name from an S3 common prefix like "vt2/0_1/".
-    /// </summary>
-    public static bool TryParseCommonPrefix(string commonPrefix, string expectedRootPrefix, out AppVersion version)
-    {
-        version = new AppVersion();
-        var normalized = commonPrefix.Trim('/');
-        var root = expectedRootPrefix.Trim('/');
-
-        string folderName;
-        if (normalized.StartsWith(root + "/", StringComparison.Ordinal))
-        {
-            var relative = normalized[(root.Length + 1)..];
-            var slash = relative.IndexOf('/');
-            folderName = slash >= 0 ? relative[..slash] : relative;
-        }
-        else
-        {
-            // Prefix without root, e.g. "0_1"
-            var slash = normalized.IndexOf('/');
-            folderName = slash >= 0 ? normalized[..slash] : normalized;
-        }
-
-        return TryParseFolderName(folderName, out version);
     }
 }

@@ -1,6 +1,5 @@
 using System.Net.Http;
 using System.IO;
-using System.Xml.Linq;
 using Installer.Models;
 
 namespace Installer.Services;
@@ -9,11 +8,11 @@ public sealed class YandexStorageService : IDisposable
 {
     public const string BucketName = "vt2";
     public const string ObjectPrefix = "vt2/";
+    public const string VersionFileName = "version.json";
     public const string SelfContainedZipName = "self-contained.zip";
 
-    private static readonly XNamespace S3 = "http://s3.amazonaws.com/doc/2006-03-01/";
-    private static readonly Uri ListUri =
-        new($"https://storage.yandexcloud.net/{BucketName}?list-type=2&prefix={Uri.EscapeDataString(ObjectPrefix)}&delimiter=/");
+    public static readonly Uri VersionJsonUri =
+        new($"https://storage.yandexcloud.net/{BucketName}/{VersionFileName}");
 
     private readonly HttpClient _httpClient;
 
@@ -29,42 +28,19 @@ public sealed class YandexStorageService : IDisposable
 
     public async Task<AppVersion> GetRemoteVersionAsync(CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync(ListUri, cancellationToken).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
+        using var response = await _httpClient
+            .GetAsync(VersionJsonUri, cancellationToken)
+            .ConfigureAwait(false);
 
-        var xml = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        var document = XDocument.Parse(xml);
-
-        var versions = document
-            .Descendants(S3 + "CommonPrefixes")
-            .Elements(S3 + "Prefix")
-            .Select(e => e.Value)
-            .Select(prefix =>
-            {
-                if (VersionParser.TryParseCommonPrefix(prefix, ObjectPrefix, out var version))
-                {
-                    return version;
-                }
-
-                return null;
-            })
-            .Where(v => v is not null)
-            .Cast<AppVersion>()
-            .ToList();
-
-        if (versions.Count == 0)
+        if (!response.IsSuccessStatusCode)
         {
             throw new InvalidOperationException(
-                "В хранилище не найдена папка версии приложения. Проверьте доступность бакета.");
+                $"Не удалось загрузить {VersionFileName} из хранилища " +
+                $"(HTTP {(int)response.StatusCode} {response.ReasonPhrase}).");
         }
 
-        if (versions.Count > 1)
-        {
-            throw new InvalidOperationException(
-                $"В хранилище найдено несколько папок версий ({versions.Count}). Ожидается одна.");
-        }
-
-        return versions[0];
+        var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        return VersionParser.ParseVersionJson(json);
     }
 
     public string GetSelfContainedZipUrl(AppVersion version) =>

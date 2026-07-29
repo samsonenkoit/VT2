@@ -45,9 +45,9 @@ VT2/
 
 ## Installer and distribution
 
-- Publish: `.\publish.ps1` → `publish/{major}_{minor}/framework-dependent.zip` and `self-contained.zip` (folder name from `VtApp/version.json`).
-- Upload that folder to Yandex Object Storage under `vt2/{major}_{minor}/` (bucket `vt2`). Keep exactly one version folder.
-- Installer lists `https://storage.yandexcloud.net/vt2?list-type=2&prefix=vt2/&delimiter=/`, downloads `self-contained.zip`, installs to `%LocalAppData%\VT2\App`, creates Desktop shortcut `VT2.lnk`.
+- Publish: `.\publish.ps1` → `publish/{major}_{minor}/framework-dependent.zip` and `self-contained.zip` (folder name from `VtApp/version.json`), plus `publish/version.json`.
+- Upload `version.json` to the bucket root and the version folder to Yandex Object Storage under `vt2/{major}_{minor}/` (bucket `vt2`). Keep exactly one version folder.
+- Installer reads `https://storage.yandexcloud.net/vt2/version.json`, downloads `self-contained.zip` from `vt2/{major}_{minor}/`, installs to `%LocalAppData%\VT2\App`, creates Desktop shortcut `VT2.lnk`.
 - Local data (`vt2.db`, `TasksFiles`) stays under `%LocalAppData%\VT2\` outside `App`.
 
 ## Architecture

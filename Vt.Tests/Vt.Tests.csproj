@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Database\Database.csproj" />
+    <ProjectReference Include="..\Installer\Installer.csproj" />
     <ProjectReference Include="..\VtApp\VtApp.csproj" />
   </ItemGroup>
 
