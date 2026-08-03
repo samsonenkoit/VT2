@@ -1,3 +1,4 @@
+using System.Windows;
 using Database.Models;
 using Database.Repositories;
 using VtApp.Models;
@@ -79,13 +80,15 @@ public class TasksViewModelTests
     {
         var viewModel = CreateViewModel(new FakeTaskRepository(
         [
-            CreateTask(5, "Редактировать", TaskPriority.Medium),
+            CreateTask(5, "Редактировать", TaskPriority.Urgent),
         ]));
 
-        await viewModel.LoadTasksAsync();
-        var task = viewModel.MediumTasks.Single();
-
-        await viewModel.EditTaskCommand.ExecuteAsync(task);
+        await viewModel.EditTaskCommand.ExecuteAsync(new TaskItem
+        {
+            Id = 5,
+            Title = "Редактировать",
+            Priority = TaskPriority.Urgent,
+        });
 
         Assert.IsType<TaskEditViewModel>(viewModel.CurrentContent);
         var editViewModel = (TaskEditViewModel)viewModel.CurrentContent;
@@ -94,7 +97,7 @@ public class TasksViewModelTests
     }
 
     [Fact]
-    public async Task EditTask_WhenTaskMissing_ReturnsToBoard()
+    public async Task EditTask_WhenTaskMissing_StaysOnBoard()
     {
         var viewModel = CreateViewModel(new FakeTaskRepository([]));
 
@@ -114,15 +117,59 @@ public class TasksViewModelTests
         Assert.Same(viewModel, viewModel.CurrentContent);
     }
 
-    private static TasksViewModel CreateViewModel(FakeTaskRepository repository)
+    [Fact]
+    public async Task DeleteTask_WhenConfirmed_RemovesFromBoardAndSoftDeletes()
     {
+        var repository = new FakeTaskRepository(
+        [
+            CreateTask(1, "Удалить меня", TaskPriority.Medium),
+            CreateTask(2, "Оставить", TaskPriority.Medium),
+        ]);
+        var fileService = new TrackingTaskFileService();
+        var viewModel = CreateViewModel(repository, fileService);
+        viewModel.ConfirmDelete = static (_, _) => MessageBoxResult.OK;
+        await viewModel.LoadTasksAsync();
+        var taskToDelete = viewModel.MediumTasks.First(t => t.Id == 1);
+
+        await viewModel.DeleteTaskCommand.ExecuteAsync(taskToDelete);
+
+        Assert.Single(viewModel.MediumTasks);
+        Assert.Equal(2, viewModel.MediumTasks[0].Id);
+        Assert.Equal([1], repository.SoftDeletedIds);
+        Assert.Equal([1], fileService.DeletedDirectoryTaskIds);
+    }
+
+    [Fact]
+    public async Task DeleteTask_WhenCancelled_DoesNothing()
+    {
+        var repository = new FakeTaskRepository(
+        [
+            CreateTask(1, "Останется", TaskPriority.Urgent),
+        ]);
+        var fileService = new TrackingTaskFileService();
+        var viewModel = CreateViewModel(repository, fileService);
+        viewModel.ConfirmDelete = static (_, _) => MessageBoxResult.Cancel;
+        await viewModel.LoadTasksAsync();
+        var task = Assert.Single(viewModel.UrgentTasks);
+
+        await viewModel.DeleteTaskCommand.ExecuteAsync(task);
+
+        Assert.Single(viewModel.UrgentTasks);
+        Assert.Empty(repository.SoftDeletedIds);
+        Assert.Empty(fileService.DeletedDirectoryTaskIds);
+    }
+
+    private static TasksViewModel CreateViewModel(
+        FakeTaskRepository repository,
+        ITaskFileService? fileService = null)
+    {
+        fileService ??= new EmptyTaskFileService();
         var editViewModel = new TaskEditViewModel(
             repository,
             new EmptySubtaskRepository(),
             new EmptyGoalRepository(),
-            new EmptyTaskFileService());
-        var tasksViewModel = new TasksViewModel(repository, editViewModel);
-        return tasksViewModel;
+            fileService);
+        return new TasksViewModel(repository, fileService, editViewModel);
     }
 
     private static TaskDb CreateTask(
@@ -141,14 +188,41 @@ public class TasksViewModelTests
 
     private sealed class EmptyTaskFileService : ITaskFileService
     {
-        public Task<IReadOnlyList<VtApp.Models.TaskFileItem>> GetFilesAsync(int taskId, CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyList<VtApp.Models.TaskFileItem>>([]);
+        public Task<IReadOnlyList<TaskFileItem>> GetFilesAsync(int taskId, CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<TaskFileItem>>([]);
 
-        public Task<VtApp.Models.TaskFileItem> AddFileAsync(int taskId, string sourceFilePath, CancellationToken cancellationToken = default) =>
+        public Task<TaskFileItem> AddFileAsync(int taskId, string sourceFilePath, CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
         public Task DeleteFileAsync(int taskId, string fileName, CancellationToken cancellationToken = default) =>
             Task.CompletedTask;
+
+        public Task DeleteTaskDirectoryAsync(int taskId, CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
+
+        public void OpenFile(int taskId, string fileName)
+        {
+        }
+    }
+
+    private sealed class TrackingTaskFileService : ITaskFileService
+    {
+        public List<int> DeletedDirectoryTaskIds { get; } = [];
+
+        public Task<IReadOnlyList<TaskFileItem>> GetFilesAsync(int taskId, CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<TaskFileItem>>([]);
+
+        public Task<TaskFileItem> AddFileAsync(int taskId, string sourceFilePath, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task DeleteFileAsync(int taskId, string fileName, CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
+
+        public Task DeleteTaskDirectoryAsync(int taskId, CancellationToken cancellationToken = default)
+        {
+            DeletedDirectoryTaskIds.Add(taskId);
+            return Task.CompletedTask;
+        }
 
         public void OpenFile(int taskId, string fileName)
         {
@@ -191,8 +265,11 @@ public class TasksViewModelTests
 
         public FakeTaskRepository(IReadOnlyList<TaskDb> tasks) => _tasks = tasks;
 
+        public List<int> SoftDeletedIds { get; } = [];
+
         public Task<IReadOnlyList<TaskDb>> GetAllNotDeletedAsync(CancellationToken cancellationToken = default) =>
-            Task.FromResult(_tasks);
+            Task.FromResult<IReadOnlyList<TaskDb>>(
+                _tasks.Where(t => t.DeletedAtUtc is null && !SoftDeletedIds.Contains(t.Id)).ToList());
 
         public Task<TaskDb?> GetAsync(int id, CancellationToken cancellationToken = default) =>
             Task.FromResult(_tasks.FirstOrDefault(t => t.Id == id));
@@ -202,5 +279,11 @@ public class TasksViewModelTests
 
         public Task UpdateAsync(TaskDb task, CancellationToken cancellationToken = default) =>
             Task.CompletedTask;
+
+        public Task SoftDeleteAsync(int id, CancellationToken cancellationToken = default)
+        {
+            SoftDeletedIds.Add(id);
+            return Task.CompletedTask;
+        }
     }
 }

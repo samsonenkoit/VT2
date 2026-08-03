@@ -11,4 +11,6 @@ public interface ITaskRepository
     Task<TaskDb> AddAsync(TaskDb task, CancellationToken cancellationToken = default);
 
     Task UpdateAsync(TaskDb task, CancellationToken cancellationToken = default);
+
+    Task SoftDeleteAsync(int id, CancellationToken cancellationToken = default);
 }

@@ -79,6 +79,7 @@ public class MainWindowViewModelTests
         var repository = new EmptyTaskRepository();
         return new TasksViewModel(
             repository,
+            new EmptyTaskFileService(),
             new TaskEditViewModel(
                 repository,
                 new EmptySubtaskRepository(),
@@ -122,6 +123,9 @@ public class MainWindowViewModelTests
 
         public Task UpdateAsync(TaskDb task, CancellationToken cancellationToken = default) =>
             Task.CompletedTask;
+
+        public Task SoftDeleteAsync(int id, CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
     }
 
     private sealed class EmptyTaskFileService : ITaskFileService
@@ -133,6 +137,9 @@ public class MainWindowViewModelTests
             throw new NotSupportedException();
 
         public Task DeleteFileAsync(int taskId, string fileName, CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
+
+        public Task DeleteTaskDirectoryAsync(int taskId, CancellationToken cancellationToken = default) =>
             Task.CompletedTask;
 
         public void OpenFile(int taskId, string fileName)

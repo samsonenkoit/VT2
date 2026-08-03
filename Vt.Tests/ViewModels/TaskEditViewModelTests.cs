@@ -720,6 +720,9 @@ public class TaskEditViewModelTests
             UpdatedTasks.Add(task);
             return Task.CompletedTask;
         }
+
+        public Task SoftDeleteAsync(int id, CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
     }
 
     private sealed class FakeSubtaskRepository(IReadOnlyList<SubtaskDb> subtasks) : ISubtaskRepository
@@ -799,6 +802,9 @@ public class TaskEditViewModelTests
             DeletedFiles.Add((taskId, fileName));
             return Task.CompletedTask;
         }
+
+        public Task DeleteTaskDirectoryAsync(int taskId, CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
 
         public void OpenFile(int taskId, string fileName)
         {

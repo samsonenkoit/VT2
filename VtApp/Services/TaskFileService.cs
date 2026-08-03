@@ -65,6 +65,17 @@ public sealed class TaskFileService(IAppDataPathProvider pathProvider) : ITaskFi
         return Task.CompletedTask;
     }
 
+    public Task DeleteTaskDirectoryAsync(int taskId, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var taskDirectory = pathProvider.GetTaskFilesDirectory(taskId);
+        if (Directory.Exists(taskDirectory))
+            Directory.Delete(taskDirectory, recursive: true);
+
+        return Task.CompletedTask;
+    }
+
     public void OpenFile(int taskId, string fileName)
     {
         if (string.IsNullOrWhiteSpace(fileName))

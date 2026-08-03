@@ -30,4 +30,14 @@ public class TaskRepository(VtDbContext context) : ITaskRepository
         context.Tasks.Update(task);
         await context.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task SoftDeleteAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var existing = await context.Tasks.FindAsync([id], cancellationToken);
+        if (existing is null || existing.DeletedAtUtc is not null)
+            return;
+
+        existing.DeletedAtUtc = DateTime.UtcNow;
+        await context.SaveChangesAsync(cancellationToken);
+    }
 }

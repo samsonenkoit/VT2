@@ -10,5 +10,7 @@ public interface ITaskFileService
 
     Task DeleteFileAsync(int taskId, string fileName, CancellationToken cancellationToken = default);
 
+    Task DeleteTaskDirectoryAsync(int taskId, CancellationToken cancellationToken = default);
+
     void OpenFile(int taskId, string fileName);
 }

@@ -86,6 +86,35 @@ public class TaskRepositoryTests : IDisposable
         Assert.Equal("Новая задача", found.Title);
     }
 
+    [Fact]
+    public async Task SoftDeleteAsync_HidesFromGetNotDeleted()
+    {
+        var task = CreateTask("К удалению");
+        _context.Tasks.Add(task);
+        await _context.SaveChangesAsync();
+
+        await _repository.SoftDeleteAsync(task.Id);
+
+        Assert.Empty(await _repository.GetAllNotDeletedAsync());
+        var stored = await _repository.GetAsync(task.Id);
+        Assert.NotNull(stored);
+        Assert.NotNull(stored.DeletedAtUtc);
+    }
+
+    [Fact]
+    public async Task SoftDeleteAsync_NoOps_WhenAlreadyDeletedOrMissing()
+    {
+        var task = CreateTask("Уже удалена", deletedAt: DateTime.UtcNow);
+        _context.Tasks.Add(task);
+        await _context.SaveChangesAsync();
+        var deletedAt = task.DeletedAtUtc;
+
+        await _repository.SoftDeleteAsync(task.Id);
+        await _repository.SoftDeleteAsync(999);
+
+        Assert.Equal(deletedAt, (await _repository.GetAsync(task.Id))!.DeletedAtUtc);
+    }
+
     private static TaskDb CreateTask(
         string title,
         TaskPriority priority = TaskPriority.Medium,

@@ -94,6 +94,21 @@ public class TaskFileServiceTests : IDisposable
         await _service.DeleteFileAsync(5, "missing.txt");
     }
 
+    [Fact]
+    public async Task DeleteTaskDirectoryAsync_RemovesFolderAndFiles()
+    {
+        const int taskId = 6;
+        var sourcePath = Path.Combine(_tempDirectory, "doc.txt");
+        await File.WriteAllTextAsync(sourcePath, "data");
+        await _service.AddFileAsync(taskId, sourcePath);
+        var taskDirectory = Path.Combine(_tempDirectory, "TasksFiles", $"Task_{taskId}");
+        Assert.True(Directory.Exists(taskDirectory));
+
+        await _service.DeleteTaskDirectoryAsync(taskId);
+
+        Assert.False(Directory.Exists(taskDirectory));
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_tempDirectory))
