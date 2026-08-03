@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Database.Models;
@@ -11,6 +12,7 @@ namespace VtApp.ViewModels;
 public partial class TasksViewModel : ObservableObject
 {
     private readonly ITaskRepository _taskRepository;
+    private readonly ITaskFileService _taskFileService;
     private readonly TaskEditViewModel _taskEditViewModel;
 
     public ObservableCollection<TaskItem> CriticalTasks { get; } = [];
@@ -24,9 +26,20 @@ public partial class TasksViewModel : ObservableObject
     [ObservableProperty]
     private bool _isLoading;
 
-    public TasksViewModel(ITaskRepository taskRepository, TaskEditViewModel taskEditViewModel)
+    /// <summary>
+    /// Overridable in tests; production uses MessageBox confirmation.
+    /// </summary>
+    public Func<string, string, MessageBoxResult> ConfirmDelete { get; set; } =
+        static (message, caption) =>
+            MessageBox.Show(message, caption, MessageBoxButton.OKCancel, MessageBoxImage.Warning);
+
+    public TasksViewModel(
+        ITaskRepository taskRepository,
+        ITaskFileService taskFileService,
+        TaskEditViewModel taskEditViewModel)
     {
         _taskRepository = taskRepository;
+        _taskFileService = taskFileService;
         _taskEditViewModel = taskEditViewModel;
         _currentContent = this;
 
@@ -64,6 +77,21 @@ public partial class TasksViewModel : ObservableObject
 
     [RelayCommand]
     private Task EditTask(TaskItem task) => OpenEditAsync(task.Id);
+
+    [RelayCommand]
+    private async Task DeleteTaskAsync(TaskItem task)
+    {
+        var result = ConfirmDelete(
+            $"Удалить задачу \"{task.Title}\"?",
+            "Удаление");
+
+        if (result != MessageBoxResult.OK)
+            return;
+
+        await _taskRepository.SoftDeleteAsync(task.Id);
+        await _taskFileService.DeleteTaskDirectoryAsync(task.Id);
+        GetCollectionForPriority(task.Priority).Remove(task);
+    }
 
     private async Task OpenEditAsync(int taskId)
     {
