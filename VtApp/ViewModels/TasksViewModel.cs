@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Database.Models;
@@ -14,6 +13,7 @@ public partial class TasksViewModel : ObservableObject
     private readonly ITaskRepository _taskRepository;
     private readonly ITaskFileService _taskFileService;
     private readonly TaskEditViewModel _taskEditViewModel;
+    private TaskItem? _pendingDeleteTask;
 
     public ObservableCollection<TaskItem> CriticalTasks { get; } = [];
     public ObservableCollection<TaskItem> UrgentTasks { get; } = [];
@@ -26,12 +26,11 @@ public partial class TasksViewModel : ObservableObject
     [ObservableProperty]
     private bool _isLoading;
 
-    /// <summary>
-    /// Overridable in tests; production uses MessageBox confirmation.
-    /// </summary>
-    public Func<string, string, MessageBoxResult> ConfirmDelete { get; set; } =
-        static (message, caption) =>
-            MessageBox.Show(message, caption, MessageBoxButton.OKCancel, MessageBoxImage.Warning);
+    [ObservableProperty]
+    private bool _isDeleteConfirmOpen;
+
+    [ObservableProperty]
+    private string _deleteConfirmMessage = string.Empty;
 
     public TasksViewModel(
         ITaskRepository taskRepository,
@@ -79,18 +78,37 @@ public partial class TasksViewModel : ObservableObject
     private Task EditTask(TaskItem task) => OpenEditAsync(task.Id);
 
     [RelayCommand]
-    private async Task DeleteTaskAsync(TaskItem task)
+    private void DeleteTask(TaskItem task)
     {
-        var result = ConfirmDelete(
-            $"Удалить задачу \"{task.Title}\"?",
-            "Удаление");
+        _pendingDeleteTask = task;
+        DeleteConfirmMessage = $"Удалить задачу «{task.Title}»? Файлы задачи будут удалены без возможности восстановления.";
+        IsDeleteConfirmOpen = true;
+    }
 
-        if (result != MessageBoxResult.OK)
+    [RelayCommand]
+    private async Task ConfirmDeleteAsync()
+    {
+        var task = _pendingDeleteTask;
+        IsDeleteConfirmOpen = false;
+
+        if (task is null)
             return;
 
         await _taskRepository.SoftDeleteAsync(task.Id);
         await _taskFileService.DeleteTaskDirectoryAsync(task.Id);
         GetCollectionForPriority(task.Priority).Remove(task);
+    }
+
+    [RelayCommand]
+    private void CancelDelete() => IsDeleteConfirmOpen = false;
+
+    partial void OnIsDeleteConfirmOpenChanged(bool value)
+    {
+        if (value)
+            return;
+
+        _pendingDeleteTask = null;
+        DeleteConfirmMessage = string.Empty;
     }
 
     private async Task OpenEditAsync(int taskId)

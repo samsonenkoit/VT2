@@ -1,4 +1,3 @@
-using System.Windows;
 using Database.Models;
 using Database.Repositories;
 using VtApp.Models;
@@ -127,12 +126,14 @@ public class TasksViewModelTests
         ]);
         var fileService = new TrackingTaskFileService();
         var viewModel = CreateViewModel(repository, fileService);
-        viewModel.ConfirmDelete = static (_, _) => MessageBoxResult.OK;
         await viewModel.LoadTasksAsync();
         var taskToDelete = viewModel.MediumTasks.First(t => t.Id == 1);
 
-        await viewModel.DeleteTaskCommand.ExecuteAsync(taskToDelete);
+        viewModel.DeleteTaskCommand.Execute(taskToDelete);
+        Assert.True(viewModel.IsDeleteConfirmOpen);
+        await viewModel.ConfirmDeleteCommand.ExecuteAsync(null);
 
+        Assert.False(viewModel.IsDeleteConfirmOpen);
         Assert.Single(viewModel.MediumTasks);
         Assert.Equal(2, viewModel.MediumTasks[0].Id);
         Assert.Equal([1], repository.SoftDeletedIds);
@@ -148,12 +149,14 @@ public class TasksViewModelTests
         ]);
         var fileService = new TrackingTaskFileService();
         var viewModel = CreateViewModel(repository, fileService);
-        viewModel.ConfirmDelete = static (_, _) => MessageBoxResult.Cancel;
         await viewModel.LoadTasksAsync();
         var task = Assert.Single(viewModel.UrgentTasks);
 
-        await viewModel.DeleteTaskCommand.ExecuteAsync(task);
+        viewModel.DeleteTaskCommand.Execute(task);
+        Assert.True(viewModel.IsDeleteConfirmOpen);
+        viewModel.CancelDeleteCommand.Execute(null);
 
+        Assert.False(viewModel.IsDeleteConfirmOpen);
         Assert.Single(viewModel.UrgentTasks);
         Assert.Empty(repository.SoftDeletedIds);
         Assert.Empty(fileService.DeletedDirectoryTaskIds);

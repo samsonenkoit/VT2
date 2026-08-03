@@ -130,67 +130,115 @@
         </DataTemplate>
 
         <DataTemplate DataType="{x:Type viewModels:TasksViewModel}">
-            <Grid Background="{DynamicResource MaterialDesign.Brush.Background}">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="8" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="8" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="8" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
+            <materialDesign:DialogHost IsOpen="{Binding IsDeleteConfirmOpen, Mode=TwoWay}"
+                                       materialDesign:TransitionAssist.DisableTransitions="True"
+                                       materialDesign:ApplyBlurBackground="False"
+                                       CloseOnClickAway="True"
+                                       DialogContent="{Binding}">
+                <materialDesign:DialogHost.DialogContentTemplate>
+                    <DataTemplate DataType="{x:Type viewModels:TasksViewModel}">
+                        <Border Padding="24"
+                                MinWidth="340"
+                                MaxWidth="440"
+                                Background="{DynamicResource MaterialDesign.Brush.Background}">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal"
+                                            Margin="0,0,0,16">
+                                    <materialDesign:PackIcon Kind="DeleteOutline"
+                                                             Width="24"
+                                                             Height="24"
+                                                             VerticalAlignment="Center"
+                                                             Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
+                                                             Margin="0,0,12,0" />
+                                    <TextBlock Text="Удаление задачи"
+                                               FontSize="20"
+                                               FontWeight="Medium"
+                                               VerticalAlignment="Center"
+                                               Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" />
+                                </StackPanel>
 
-                    <ScrollViewer Grid.Column="0"
-                                  VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled">
-                        <ItemsControl ItemsSource="{Binding CriticalTasks}"
-                                      ItemTemplate="{StaticResource TaskCardTemplate}" />
-                    </ScrollViewer>
+                                <TextBlock Text="{Binding DeleteConfirmMessage}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,0,0,24"
+                                           Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" />
 
-                    <ScrollViewer Grid.Column="2"
-                                  VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled">
-                        <ItemsControl ItemsSource="{Binding UrgentTasks}"
-                                      ItemTemplate="{StaticResource TaskCardTemplate}" />
-                    </ScrollViewer>
+                                <StackPanel Orientation="Horizontal"
+                                            HorizontalAlignment="Right">
+                                    <Button Content="Отмена"
+                                            Style="{StaticResource MaterialDesignOutlinedButton}"
+                                            Margin="0,0,8,0"
+                                            Command="{Binding CancelDeleteCommand}" />
+                                    <Button Content="Удалить"
+                                            Style="{StaticResource MaterialDesignRaisedButton}"
+                                            Command="{Binding ConfirmDeleteCommand}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </materialDesign:DialogHost.DialogContentTemplate>
 
-                    <ScrollViewer Grid.Column="4"
-                                  VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled">
-                        <ItemsControl ItemsSource="{Binding MediumTasks}"
-                                      ItemTemplate="{StaticResource TaskCardTemplate}" />
-                    </ScrollViewer>
+                <Grid Background="{DynamicResource MaterialDesign.Brush.Background}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="8" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="8" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="8" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
 
-                    <ScrollViewer Grid.Column="6"
-                                  VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled">
-                        <ItemsControl ItemsSource="{Binding NotUrgentTasks}"
-                                      ItemTemplate="{StaticResource TaskCardTemplate}" />
-                    </ScrollViewer>
+                        <ScrollViewer Grid.Column="0"
+                                      VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled">
+                            <ItemsControl ItemsSource="{Binding CriticalTasks}"
+                                          ItemTemplate="{StaticResource TaskCardTemplate}" />
+                        </ScrollViewer>
+
+                        <ScrollViewer Grid.Column="2"
+                                      VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled">
+                            <ItemsControl ItemsSource="{Binding UrgentTasks}"
+                                          ItemTemplate="{StaticResource TaskCardTemplate}" />
+                        </ScrollViewer>
+
+                        <ScrollViewer Grid.Column="4"
+                                      VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled">
+                            <ItemsControl ItemsSource="{Binding MediumTasks}"
+                                          ItemTemplate="{StaticResource TaskCardTemplate}" />
+                        </ScrollViewer>
+
+                        <ScrollViewer Grid.Column="6"
+                                      VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled">
+                            <ItemsControl ItemsSource="{Binding NotUrgentTasks}"
+                                          ItemTemplate="{StaticResource TaskCardTemplate}" />
+                        </ScrollViewer>
+                    </Grid>
+
+                    <Button Style="{StaticResource MaterialDesignFloatingActionButton}"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Bottom"
+                            Margin="0,0,8,8"
+                            Command="{Binding AddTaskCommand}"
+                            ToolTip="Добавить задачу"
+                            materialDesign:ElevationAssist.Elevation="Dp6">
+                        <materialDesign:PackIcon Kind="Plus"
+                                                 Width="24"
+                                                 Height="24" />
+                    </Button>
+
+                    <Border Background="#80FFFFFF"
+                            Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
+                                     IsIndeterminate="True"
+                                     Width="48"
+                                     Height="48" />
+                    </Border>
                 </Grid>
-
-                <Button Style="{StaticResource MaterialDesignFloatingActionButton}"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Bottom"
-                        Margin="0,0,8,8"
-                        Command="{Binding AddTaskCommand}"
-                        ToolTip="Добавить задачу"
-                        materialDesign:ElevationAssist.Elevation="Dp6">
-                    <materialDesign:PackIcon Kind="Plus"
-                                             Width="24"
-                                             Height="24" />
-                </Button>
-
-                <Border Background="#80FFFFFF"
-                        Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
-                                 IsIndeterminate="True"
-                                 Width="48"
-                                 Height="48" />
-                </Border>
-            </Grid>
+            </materialDesign:DialogHost>
         </DataTemplate>
     </UserControl.Resources>
 
