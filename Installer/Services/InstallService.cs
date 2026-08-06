@@ -7,7 +7,7 @@ namespace Installer.Services;
 
 public sealed class InstallService
 {
-    public const string ExeFileName = "VtApp.exe";
+    public const string ExeFileName = "iFellowTracker.exe";
     public const string VersionFileName = "version.json";
 
     public string InstallDirectory { get; }
@@ -46,7 +46,7 @@ public sealed class InstallService
     {
         try
         {
-            return Process.GetProcessesByName("VtApp").Length > 0;
+            return Process.GetProcessesByName("iFellowTracker").Length > 0;
         }
         catch (InvalidOperationException)
         {
