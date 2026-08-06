@@ -62,6 +62,9 @@ public partial class MainViewModel : ObservableObject
 
             if (installed && localVersion is not null && !remoteVersion.IsNewerThan(localVersion))
             {
+                StatusText = "Создание ярлыка на рабочем столе…";
+                _shortcut.CreateOrUpdateDesktopShortcut(_install.ExePath, _install.InstallDirectory);
+
                 StatusText = $"Уже установлена актуальная версия {localVersion.Display}.";
                 IsProgressIndeterminate = false;
                 ProgressValue = 1;
