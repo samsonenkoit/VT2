@@ -19,7 +19,7 @@ public sealed class InstallService
     public InstallService()
         : this(Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "VT2",
+            "iFellowTracker",
             "App"))
     {
     }
@@ -64,7 +64,7 @@ public sealed class InstallService
 
         var stagingRoot = Path.Combine(
             Path.GetTempPath(),
-            "VT2_Install_" + Guid.NewGuid().ToString("N"));
+            "iFellowTracker_Install_" + Guid.NewGuid().ToString("N"));
         var stagingContent = Path.Combine(stagingRoot, "content");
 
         try

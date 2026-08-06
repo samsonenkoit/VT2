@@ -73,8 +73,8 @@ public partial class MainViewModel : ObservableObject
                 while (_install.IsAppRunning())
                 {
                     var result = MessageBox.Show(
-                        "Приложение VT2 запущено.\n\nЗакройте его и нажмите «ОК», чтобы продолжить обновление, или «Отмена» для выхода.",
-                        "Обновление VT2",
+                        "Приложение Айфэллоу Трекер запущено.\n\nЗакройте его и нажмите «ОК», чтобы продолжить обновление, или «Отмена» для выхода.",
+                        "Обновление Айфэллоу Трекер",
                         MessageBoxButton.OKCancel,
                         MessageBoxImage.Warning);
 
@@ -94,7 +94,7 @@ public partial class MainViewModel : ObservableObject
 
             zipPath = Path.Combine(
                 Path.GetTempPath(),
-                $"VT2_{remoteVersion.FolderName}_{Guid.NewGuid():N}.zip");
+                $"iFellowTracker_{remoteVersion.FolderName}_{Guid.NewGuid():N}.zip");
 
             var progress = new Progress<double>(value =>
             {

@@ -8,12 +8,12 @@ public sealed class AppDataPathProvider : IAppDataPathProvider
     {
         return Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "VT2");
+            "iFellowTracker");
     }
 
     public string GetDatabaseFilePath()
     {
-        return Path.Combine(GetAppDataDirectory(), "vt2.db");
+        return Path.Combine(GetAppDataDirectory(), "iFellowTracker.db");
     }
 
     public string GetSettingsFilePath()

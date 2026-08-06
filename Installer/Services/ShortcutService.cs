@@ -10,7 +10,7 @@ public sealed class ShortcutService
     public ShortcutService()
         : this(Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
-            "VT2.lnk"))
+            "iFellowTracker.lnk"))
     {
     }
 
@@ -36,7 +36,7 @@ public sealed class ShortcutService
             var shortcut = shell.CreateShortcut(DesktopShortcutPath);
             shortcut.TargetPath = targetExePath;
             shortcut.WorkingDirectory = workingDirectory;
-            shortcut.Description = "VT2";
+            shortcut.Description = "Айфэллоу Трекер";
             shortcut.IconLocation = targetExePath + ",0";
             shortcut.Save();
         }

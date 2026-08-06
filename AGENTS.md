@@ -2,7 +2,7 @@
 
 ## About the Project
 
-**VT2** is a Windows desktop task management application: priority board, task edit (factors, subtasks, files), settings placeholder.
+**Айфэллоу Трекер** (solution/repo: **VT2**) is a Windows desktop task management application: priority board, task edit (factors, subtasks, files), settings. UI display name is Russian; local artifacts use English `iFellowTracker`.
 
 ## Technology Stack
 
@@ -47,8 +47,8 @@ VT2/
 
 - Publish: `.\publish.ps1` → `publish/{major}_{minor}/framework-dependent.zip` and `self-contained.zip` (folder name from `VtApp/version.json`), plus `publish/version.json`.
 - Upload `version.json` to the bucket root and the version folder to Yandex Object Storage under `vt2/{major}_{minor}/` (bucket `vt2`). Keep exactly one version folder.
-- Installer reads `https://storage.yandexcloud.net/vt2/version.json`, downloads `self-contained.zip` from `vt2/{major}_{minor}/`, installs to `%LocalAppData%\VT2\App`, creates Desktop shortcut `VT2.lnk`.
-- Local data (`vt2.db`, `TasksFiles`) stays under `%LocalAppData%\VT2\` outside `App`.
+- Installer reads `https://storage.yandexcloud.net/vt2/version.json`, downloads `self-contained.zip` from `vt2/{major}_{minor}/`, installs to `%LocalAppData%\iFellowTracker\App`, creates Desktop shortcut `iFellowTracker.lnk` (description: «Айфэллоу Трекер»).
+- Local data (`iFellowTracker.db`, `TasksFiles`) stays under `%LocalAppData%\iFellowTracker\` outside `App`. Old `%LocalAppData%\VT2` is not migrated.
 
 ## Architecture
 
@@ -66,8 +66,8 @@ VT2/
 
 **Data**
 
-- SQLite file: `%LocalAppData%\VT2\vt2.db`.
-- Task attachments: `%LocalAppData%\VT2\TasksFiles\Task_{id}\` (filesystem only; no DB metadata). Add moves into the folder; delete removes the file.
+- SQLite file: `%LocalAppData%\iFellowTracker\iFellowTracker.db`.
+- Task attachments: `%LocalAppData%\iFellowTracker\TasksFiles\Task_{id}\` (filesystem only; no DB metadata). Add moves into the folder; delete removes the file.
 - Soft-delete via `DeletedAtUtc` (filtered in repository queries).
 - **No EF migrations** — schema via `EnsureCreated()`.
 - On first launch: `EnsureCreated()` + seed (`TaskSeedData`). Subsequent launches keep the existing database.
