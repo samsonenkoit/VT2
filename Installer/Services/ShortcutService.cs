@@ -10,7 +10,7 @@ public sealed class ShortcutService
     public ShortcutService()
         : this(Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
-            "Айфэллоу Трекер.lnk"))
+            "iFellowTracker.lnk"))
     {
     }
 

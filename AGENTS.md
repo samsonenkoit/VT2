@@ -47,7 +47,7 @@ VT2/
 
 - Publish: `.\publish.ps1` → `publish/{major}_{minor}/framework-dependent.zip` and `self-contained.zip` (folder name from `VtApp/version.json`), plus `publish/version.json`.
 - Upload `version.json` to the bucket root and the version folder to Yandex Object Storage under `vt2/{major}_{minor}/` (bucket `vt2`). Keep exactly one version folder.
-- Installer reads `https://storage.yandexcloud.net/vt2/version.json`, downloads `self-contained.zip` from `vt2/{major}_{minor}/`, installs to `%LocalAppData%\iFellowTracker\App`, creates Desktop shortcut `Айфэллоу Трекер.lnk`.
+- Installer reads `https://storage.yandexcloud.net/vt2/version.json`, downloads `self-contained.zip` from `vt2/{major}_{minor}/`, installs to `%LocalAppData%\iFellowTracker\App`, creates Desktop shortcut `iFellowTracker.lnk` (description: «Айфэллоу Трекер»).
 - Local data (`iFellowTracker.db`, `TasksFiles`) stays under `%LocalAppData%\iFellowTracker\` outside `App`. Old `%LocalAppData%\VT2` is not migrated.
 
 ## Architecture
