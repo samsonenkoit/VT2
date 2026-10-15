@@ -69,7 +69,7 @@ VT2/
 - SQLite file: `%LocalAppData%\iFellowTracker\iFellowTracker.db`.
 - Task attachments: `%LocalAppData%\iFellowTracker\TasksFiles\Task_{id}\` (filesystem only; no DB metadata). Add moves into the folder; delete removes the file.
 - Soft-delete via `DeletedAtUtc` (filtered in repository queries).
-- **No EF migrations** — schema via `EnsureCreated()`.
+- **No EF migrations** — schema via `EnsureCreated()`. Changing `Database/Models` or `VtDbContext` does not upgrade an existing user database (`EnsureCreated()` is a no-op once the file exists) — flag this whenever a change touches the schema.
 - On first launch: `EnsureCreated()` + seed (`TaskSeedData`). Subsequent launches keep the existing database.
 
 **Priority**
@@ -114,6 +114,7 @@ VT2/
 - Avoid unnecessary abstractions; keep diffs minimal and focused.
 - Add tests for non-trivial ViewModel / repository / service behavior.
 - Do not commit secrets or local config (see `.gitignore`).
+- `DEPENDENCIES.md` lists NuGet packages with versions and licenses — update it when adding or bumping a package.
 - Note: `Popup.IsOpen` binds **TwoWay by default** (`BindsTwoWayByDefault`); use explicit `Mode=OneWay` when binding to a `ToggleButton.IsChecked` if dismiss must not uncheck the toggle.
 
 ## Build and Run
@@ -128,3 +129,15 @@ dotnet publish Installer/Installer.csproj -c Release -o publish/Installer
 ```
 
 Requires .NET 10 SDK and Windows (WPF). Close a running `iFellowTracker` before rebuild if copy-to-output fails (`MSB3027`).
+
+Run a subset of tests:
+
+```bash
+dotnet test Vt.Tests/Vt.Tests.csproj --filter "FullyQualifiedName~TaskRepositoryTests"
+dotnet test Vt.Tests/Vt.Tests.csproj --filter "FullyQualifiedName~TaskRepositoryTests.MethodName"
+```
+
+**Test database setup**
+
+- Repository tests use an open in-memory `SqliteConnection("Data Source=:memory:")` passed to `UseSqlite(connection)` + `EnsureCreated()`; the connection must stay open for the test's lifetime (disposed in `Dispose`).
+- `DatabaseInitializerTests` use a real file under `%TEMP%\VT2.Tests\{guid}` and call `SqliteConnection.ClearAllPools()` before deleting it (otherwise the file stays locked on Windows).
