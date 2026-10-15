@@ -1,0 +1,18 @@
+<Project>
+
+  <!-- Win32 version info for the shipped EXEs (VtApp, Installer). Version comes from VtApp/version.json. -->
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'VtApp' Or '$(MSBuildProjectName)' == 'Installer'">
+    <VtVersionJson>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)VtApp\version.json'))</VtVersionJson>
+    <VtVersionMajor>$([System.Text.RegularExpressions.Regex]::Match($(VtVersionJson), '"major"\s*:\s*(\d+)').Groups[1].Value)</VtVersionMajor>
+    <VtVersionMinor>$([System.Text.RegularExpressions.Regex]::Match($(VtVersionJson), '"minor"\s*:\s*(\d+)').Groups[1].Value)</VtVersionMinor>
+    <Version>$(VtVersionMajor).$(VtVersionMinor).0.0</Version>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+
+    <Company>Акционерное общество «АЙФЭЛЛОУ»</Company>
+    <Copyright>© 2026 АО «АЙФЭЛЛОУ». Все права защищены.</Copyright>
+    <Product>Айфэллоу Трекер (iFellow Tracker)</Product>
+    <!-- AssemblyDescription is emitted as the Win32 "Comments" field. -->
+    <Description>Программное обеспечение Айфэллоу Трекер. Правообладатель: АО «АЙФЭЛЛОУ».</Description>
+  </PropertyGroup>
+
+</Project>

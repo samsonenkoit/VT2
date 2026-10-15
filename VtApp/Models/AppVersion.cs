@@ -7,4 +7,6 @@ public sealed class AppVersion
     public int Minor { get; set; } = 1;
 
     public string Display => $"{Major}.{Minor}";
+
+    public string FullDisplay => $"{Major}.{Minor}.0.0";
 }

@@ -39,6 +39,7 @@ public class AppVersionServiceTests : IDisposable
         Assert.Equal(2, version.Major);
         Assert.Equal(5, version.Minor);
         Assert.Equal("2.5", version.Display);
+        Assert.Equal("2.5.0.0", version.FullDisplay);
     }
 
     [Fact]

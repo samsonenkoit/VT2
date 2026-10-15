@@ -12,6 +12,7 @@
         <converters:EnumEqualsConverter x:Key="EnumEqualsConverter" />
     </UserControl.Resources>
 
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
     <StackPanel VerticalAlignment="Top">
         <TextBlock Text="{Binding Title}"
                    Style="{StaticResource MaterialDesignHeadline4TextBlock}"
@@ -34,11 +35,43 @@
                          IsChecked="{Binding SelectedTheme, Converter={StaticResource EnumEqualsConverter}, ConverterParameter={x:Static models:AppTheme.Dark}}" />
         </StackPanel>
 
-        <TextBlock Text="О приложении"
+        <TextBlock Text="О программе"
                    Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
                    Margin="0,0,0,8" />
 
+        <TextBlock Text="{Binding ProductName}"
+                   Style="{StaticResource MaterialDesignBody1TextBlock}"
+                   FontWeight="Medium" />
         <TextBlock Text="{Binding VersionText}"
-                   Style="{StaticResource MaterialDesignBody1TextBlock}" />
+                   Style="{StaticResource MaterialDesignBody2TextBlock}" />
+        <TextBlock Text="{Binding ReleaseYearText}"
+                   Style="{StaticResource MaterialDesignBody2TextBlock}"
+                   Margin="0,0,0,16" />
+
+        <TextBlock Text="Правообладатель"
+                   Style="{StaticResource MaterialDesignSubtitle2TextBlock}"
+                   Margin="0,0,0,4" />
+        <TextBlock Text="{Binding RightsHolder}"
+                   Style="{StaticResource MaterialDesignBody2TextBlock}"
+                   TextWrapping="Wrap"
+                   Margin="0,0,0,16" />
+
+        <TextBlock Text="Авторы"
+                   Style="{StaticResource MaterialDesignSubtitle2TextBlock}"
+                   Margin="0,0,0,4" />
+        <TextBlock Text="{Binding Authors}"
+                   Style="{StaticResource MaterialDesignBody2TextBlock}"
+                   TextWrapping="Wrap"
+                   Margin="0,0,0,16" />
+
+        <TextBlock Text="Авторские права"
+                   Style="{StaticResource MaterialDesignSubtitle2TextBlock}"
+                   Margin="0,0,0,4" />
+        <TextBlock Text="{Binding Copyright}"
+                   Style="{StaticResource MaterialDesignBody2TextBlock}"
+                   TextWrapping="Wrap"
+                   MaxWidth="720"
+                   HorizontalAlignment="Left" />
     </StackPanel>
+    </ScrollViewer>
 </UserControl>

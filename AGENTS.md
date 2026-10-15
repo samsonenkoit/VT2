@@ -45,6 +45,7 @@ VT2/
 
 ## Installer and distribution
 
+- EXE version info (Company, Copyright, Product, Comments, FileVersion/ProductVersion) for `VtApp` and `Installer` is set in root `Directory.Build.props`; version is `{major}.{minor}.0.0` read from `VtApp/version.json` at build time. `FileDescription` comes from `AssemblyTitle` in each `.csproj`.
 - Publish: `.\publish.ps1` → `publish/{major}_{minor}/framework-dependent.zip` and `self-contained.zip` (folder name from `VtApp/version.json`), plus `publish/version.json`.
 - Upload `version.json` to the bucket root and the version folder to Yandex Object Storage under `vt2/{major}_{minor}/` (bucket `vt2`). Keep exactly one version folder.
 - Installer reads `https://storage.yandexcloud.net/vt2/version.json`, downloads `self-contained.zip` from `vt2/{major}_{minor}/`, installs to `%LocalAppData%\iFellowTracker\App` (`iFellowTracker.exe`), creates Desktop shortcut `Айфэллоу Трекер.lnk` (description: «Айфэллоу Трекер») only if that shortcut does not already exist; does not remove an old `iFellowTracker.lnk`.
@@ -101,7 +102,7 @@ VT2/
 | Subtasks | Yes (`SubtaskDb`) | Description, due date, progress; checklist UI on edit page |
 | Files | Filesystem only (`TasksFiles/Task_{id}`) | Tab on edit page when task is saved; no DB rows |
 | Goals | Yes (`GoalDb`) | До 3 слотов на задаче; в БД только непустой текст; порядок в UI по `Id` |
-| Settings | — | Placeholder page |
+| Settings | `settings.json` (theme) | Тема; раздел «О программе» — версия из `version.json`, юридический текст в `VtApp/Models/AppInfo.cs` |
 
 ## Development Conventions
 

@@ -9,6 +9,7 @@
     <ApplicationIcon>Assets\vt2-installer.ico</ApplicationIcon>
     <RootNamespace>Installer</RootNamespace>
     <AssemblyName>Installer</AssemblyName>
+    <AssemblyTitle>Установщик Айфэллоу Трекер (iFellow Tracker)</AssemblyTitle>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>

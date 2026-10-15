@@ -7,6 +7,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <AssemblyName>iFellowTracker</AssemblyName>
+    <AssemblyTitle>Айфэллоу Трекер (iFellow Tracker)</AssemblyTitle>
     <ApplicationIcon>Assets\vt2.ico</ApplicationIcon>
   </PropertyGroup>
 
